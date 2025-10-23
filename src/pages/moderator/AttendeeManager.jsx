@@ -7,12 +7,12 @@ import {
   query,
   orderBy,
   where,
-  getDocs,
   addDoc,
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
+import ModeratorNavbar from "../../components/ui/ModeratorNavbar";
 
 export default function AttendeeManager() {
   const { user } = useAuth();
@@ -23,7 +23,6 @@ export default function AttendeeManager() {
   const [expanded, setExpanded] = useState(null);
   const [search, setSearch] = useState("");
 
-  // ✅ Load all attendees
   useEffect(() => {
     const q = query(collection(db, "users"), orderBy("totalPoints", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -35,7 +34,6 @@ export default function AttendeeManager() {
     return () => unsub();
   }, []);
 
-  // ✅ Load all stations
   useEffect(() => {
     const q = query(collection(db, "stations"), where("active", "==", true));
     const unsub = onSnapshot(q, (snap) => {
@@ -44,7 +42,6 @@ export default function AttendeeManager() {
     return () => unsub();
   }, []);
 
-  // ✅ Load all scans
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "scans"), (snap) => {
       const data = {};
@@ -58,7 +55,6 @@ export default function AttendeeManager() {
     return () => unsub();
   }, []);
 
-  // ✅ Load all participations
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "participations"), (snap) => {
       const data = {};
@@ -72,14 +68,11 @@ export default function AttendeeManager() {
     return () => unsub();
   }, []);
 
-  // ✅ Toggle participation (does NOT affect points)
   const toggleParticipation = async (attendee, station, participated) => {
     if (participated) {
-      // Remove participation
       const record = participations[attendee.id]?.[station.id];
       if (record) await deleteDoc(doc(db, "participations", record.id));
     } else {
-      // Add participation
       await addDoc(collection(db, "participations"), {
         userId: attendee.id,
         stationId: station.id,
@@ -90,7 +83,6 @@ export default function AttendeeManager() {
     }
   };
 
-  // ✅ Toggle scan completion (affects points)
   const toggleStation = async (attendee, station, completed) => {
     const userRef = doc(db, "users", attendee.id);
     const currentPoints = attendee.totalPoints || 0;
@@ -123,7 +115,8 @@ export default function AttendeeManager() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-800 text-white p-6">
+    <><ModeratorNavbar />
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-2">
           🎓 Attendee Manager
@@ -132,7 +125,7 @@ export default function AttendeeManager() {
           Manage attendees, station progress, and participation
         </p>
 
-        {/* 🔍 Search */}
+        {/* Search */}
         <div className="mb-6 flex justify-center">
           <input
             type="text"
@@ -143,7 +136,7 @@ export default function AttendeeManager() {
           />
         </div>
 
-        {/* 📋 Table */}
+        {/* Table */}
         <div className="overflow-x-auto rounded-lg bg-white/10 border border-white/20">
           <table className="min-w-full text-sm text-left">
             <thead className="bg-white/10 text-gray-200 uppercase text-xs">
@@ -175,14 +168,14 @@ export default function AttendeeManager() {
                         onClick={() =>
                           setExpanded(expanded === a.id ? null : a.id)
                         }
-                        className="text-sm bg-indigo-600 px-3 py-1 rounded hover:bg-indigo-700"
+                        className="text-sm bg-indigo-500 hover:bg-indigo-600 px-3 py-1 rounded transition"
                       >
                         {expanded === a.id ? "Hide" : "View"}
                       </button>
                     </td>
                   </tr>
 
-                  {/* 🔽 Expanded Station Details */}
+                  {/* Expanded Station Details */}
                   {expanded === a.id && (
                     <tr className="bg-white/5">
                       <td colSpan="6" className="px-4 py-3">
@@ -256,5 +249,6 @@ export default function AttendeeManager() {
         </div>
       </div>
     </div>
+    </>
   );
 }

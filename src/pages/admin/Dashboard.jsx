@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import { useNavigate } from "react-router-dom";
+import AdminNavbar from "../../components/ui/AdminNavbar";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -16,11 +17,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all users
         const usersSnap = await getDocs(collection(db, "users"));
         const users = usersSnap.docs.map((d) => d.data());
 
-        // Separate counts
         const attendees = users.filter((u) => u.role === "attendee");
         const moderators = users.filter((u) => u.role === "moderator");
 
@@ -29,7 +28,6 @@ export default function AdminDashboard() {
           0
         );
 
-        // Fetch all stations
         const stationsSnap = await getDocs(collection(db, "stations"));
         const stations = stationsSnap.docs.length;
 
@@ -53,60 +51,70 @@ export default function AdminDashboard() {
     return <div className="text-center p-10 text-lg">Loading dashboard...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-800 text-white p-6">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          🧭 Admin Dashboard
-        </h1>
+    <>
+      <AdminNavbar />
+      <div className="min-h-screen bg-gray-100 p-6 pt-20">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
+            🧭 Admin Dashboard
+          </h1>
 
-        {/* STATS GRID */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <DashboardCard title="Attendees" value={stats.attendees} color="bg-green-500" />
-          <DashboardCard title="Moderators" value={stats.moderators} color="bg-yellow-500" />
-          <DashboardCard title="Stations" value={stats.stations} color="bg-blue-500" />
-          <DashboardCard title="Total Points" value={stats.totalPoints} color="bg-purple-500" />
-        </div>
+          {/* STATS GRID */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <DashboardCard title="Attendees" value={stats.attendees} />
+            <DashboardCard title="Moderators" value={stats.moderators} />
+            <DashboardCard title="Stations" value={stats.stations} />
+            <DashboardCard title="Total Points" value={stats.totalPoints} />
+          </div>
 
-        {/* QUICK LINKS */}
-        <div className="bg-white/10 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4 text-center">Quick Actions</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              onClick={() => navigate("/admin/manage-attendees")}
-              className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition"
-            >
-              Manage Attendees
-            </button>
-            <button
-              onClick={() => navigate("/admin/manage-users")}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white p-3 rounded-lg transition"
-            >
-              Manage Moderators
-            </button>
-            <button
-              onClick={() => navigate("/admin/manage-stations")}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition"
-            >
-              Manage Stations
-            </button>
-            <button
-              onClick={() => navigate("/admin/reports")}
-              className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition"
-            >
-              Reports
-            </button>
+          {/* QUICK ACTIONS */}
+          <div className="bg-white rounded-xl shadow p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+              Quick Actions
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <QuickAction
+                text="Manage Attendees"
+                onClick={() => navigate("/admin/manage-attendees")}
+              />
+              <QuickAction
+                text="Manage Moderators"
+                onClick={() => navigate("/admin/manage-users")}
+              />
+              <QuickAction
+                text="Manage Stations"
+                onClick={() => navigate("/admin/manage-stations")}
+              />
+              <QuickAction
+                text="Reports"
+                onClick={() => navigate("/admin/reports")}
+              />
+            </div>
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+// Minimal card component
+function DashboardCard({ title, value }) {
+  return (
+    <div className="rounded-xl bg-white shadow hover:shadow-md p-6 text-center transition">
+      <h3 className="text-lg font-semibold mb-2 text-gray-700">{title}</h3>
+      <p className="text-3xl font-bold text-gray-900">{value}</p>
     </div>
   );
 }
 
-function DashboardCard({ title, value, color }) {
+// Minimal quick action button
+function QuickAction({ text, onClick }) {
   return (
-    <div className={`rounded-xl shadow-lg p-6 text-center ${color}`}>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-3xl font-bold">{value}</p>
-    </div>
+    <button
+      onClick={onClick}
+      className="w-full bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-lg transition"
+    >
+      {text}
+    </button>
   );
 }

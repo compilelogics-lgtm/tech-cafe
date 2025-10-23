@@ -31,6 +31,7 @@ export const createModerator = functions.https.onCall(async (data, context) => {
       displayName: name,
       email,
       password,
+      emailVerified: true,
     });
 
     // 🗄️ Save user info to Firestore

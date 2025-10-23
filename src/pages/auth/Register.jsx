@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -6,8 +6,12 @@ import {
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { auth, db, storage } from "../../utils/firebase"; // ✅ ensure storage is exported
+import { auth, db, storage } from "../../utils/firebase";
 import { useNavigate } from "react-router-dom";
+
+import group from "./../../assets/group.png";
+import novartislogotransparent1 from "./../../assets/novartis-logo-transparent-2-1-register.png";
+import novartislogotransparent2 from "./../../assets/novartis-logo-transparent-2-register.png";
 
 const ALLOWED_DOMAIN = "@gmail.com"; // change if needed
 
@@ -25,9 +29,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -45,17 +48,18 @@ export default function Register() {
     try {
       const { name, department, email, phone, password } = formData;
 
-      // 🛑 Email domain check
       if (!email.endsWith(ALLOWED_DOMAIN)) {
         setError("Only company emails are allowed.");
         setLoading(false);
         return;
       }
 
-      // 🧩 Create Auth user
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      const { user } = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-      // 📤 Upload profile image (if provided)
       let photoURL = "";
       if (profileImage) {
         const imageRef = ref(storage, `profileImages/${user.uid}.jpg`);
@@ -63,16 +67,9 @@ export default function Register() {
         photoURL = await getDownloadURL(imageRef);
       }
 
-      // 🔄 Update Auth profile
-      await updateProfile(user, {
-        displayName: name,
-        photoURL,
-      });
-
-      // 📧 Send verification email
+      await updateProfile(user, { displayName: name, photoURL });
       await sendEmailVerification(user);
 
-      // 🗂️ Create Firestore user document
       await setDoc(doc(db, "users", user.uid), {
         name,
         department,
@@ -83,11 +80,13 @@ export default function Register() {
         totalPoints: 0,
         prizeClaimed: false,
         stationsCompleted: [],
-        photoURL, // ✅ save image URL
+        photoURL,
         createdAt: new Date(),
       });
 
-      alert("Registration successful! Please verify your email before logging in.");
+      alert(
+        "Registration successful! Please verify your email before logging in."
+      );
       navigate("/login");
     } catch (err) {
       console.error("❌ Registration error:", err);
@@ -98,74 +97,197 @@ export default function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow rounded mt-10">
-      <h2 className="text-2xl font-semibold mb-4">Register</h2>
-      <form onSubmit={handleRegister} className="space-y-4">
-        <div className="flex flex-col items-center space-y-2">
-          {preview && (
-            <img
-              src={preview}
-              alt="Profile preview"
-              className="w-24 h-24 rounded-full object-cover border"
-            />
-          )}
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="text-sm"
-          />
+    <main className="bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] w-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-white">
+      <img
+        className="absolute w-full h-full top-0 left-0 object-cover opacity-60"
+        alt="Background pattern"
+        src={group}
+      />
+
+      <div className="relative z-10 flex flex-col items-center w-full max-w-[390px] px-[58px] pt-[40px]">
+        <h1 className="font-semibold text-white text-[22px] text-center mb-2">
+          UNLOCK YOUR PASS!
+        </h1>
+
+        <p className="text-[#b4c1d9] text-xs text-center mb-6">
+          Fill in your details to join the Tech Café experience.
+        </p>
+
+        {/* --- Profile Upload --- */}
+        {/* --- Profile Upload --- */}
+        <div className="relative flex flex-col items-center mb-6">
+          <div className="relative">
+            {preview ? (
+              <img
+                src={preview}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border-2 border-[#00b1ff] shadow-[0_0_15px_rgba(0,177,255,0.5)]"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-[#dee5f12e] flex items-center justify-center border border-[#b4c1d9] text-[#b4c1d9] text-xl font-semibold">
+                {formData.name
+                  ? formData.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                  : "?"}
+              </div>
+            )}
+
+            {/* Upload button overlay */}
+            <label
+              htmlFor="profileImage"
+              className="absolute bottom-0 right-0 w-8 h-8 bg-[#00b1ff] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#008cd6] transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-4 h-4 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 7h4l2-3h6l2 3h4v13H3V7z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 11a3 3 0 110 6 3 3 0 010-6z"
+                />
+              </svg>
+              <input
+                id="profileImage"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          <p className="text-xs text-[#b4c1d9] mt-2">
+            {preview ? "Change photo" : "Upload profile photo"}
+          </p>
         </div>
 
-        <input
-          name="name"
-          onChange={handleChange}
-          value={formData.name}
-          placeholder="Name"
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          name="department"
-          onChange={handleChange}
-          value={formData.department}
-          placeholder="Department"
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          name="email"
-          type="email"
-          onChange={handleChange}
-          value={formData.email}
-          placeholder="Company Email"
-          className="w-full border p-2 rounded"
-          required
-        />
-        <input
-          name="phone"
-          onChange={handleChange}
-          value={formData.phone}
-          placeholder="Phone (optional)"
-          className="w-full border p-2 rounded"
-        />
-        <input
-          name="password"
-          type="password"
-          onChange={handleChange}
-          value={formData.password}
-          placeholder="Password"
-          className="w-full border p-2 rounded"
-          required
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        {/* --- Registration Form --- */}
+        <form
+          onSubmit={handleRegister}
+          className="flex flex-col w-[274px] gap-[19px]"
         >
-          {loading ? "Registering..." : "Register"}
-        </button>
-      </form>
-    </div>
+          <div>
+            <label className="block text-[#e0e0e0] text-[13px] mb-1">
+              Full Name
+            </label>
+            <input
+              name="name"
+              onChange={handleChange}
+              value={formData.name}
+              placeholder="e.g., Sara Ahmed"
+              className="w-full h-12 bg-[#dee5f12e] rounded-lg px-[17px] text-white placeholder:text-[#b4c1d9] border border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[#e0e0e0] text-[13px] mb-1">
+              Department
+            </label>
+            <input
+              name="department"
+              onChange={handleChange}
+              value={formData.department}
+              placeholder="e.g., R&D"
+              className="w-full h-12 bg-[#dee5f12e] rounded-lg px-[17px] text-white placeholder:text-[#b4c1d9]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[#e0e0e0] text-[13px] mb-1">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              onChange={handleChange}
+              value={formData.email}
+              placeholder="e.g., sara@novartis.com"
+              className="w-full h-12 bg-[#dee5f12e] rounded-lg px-[17px] text-white placeholder:text-[#b4c1d9]"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[#e0e0e0] text-[13px] mb-1">
+              Phone <span className="text-[#a0a0a0] text-xs">(optional)</span>
+            </label>
+            <input
+              name="phone"
+              onChange={handleChange}
+              value={formData.phone}
+              placeholder="+92 3XXXXXXXXX"
+              className="w-full h-12 bg-[#dee5f12e] rounded-lg px-[17px] text-white placeholder:text-[#b4c1d9]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[#e0e0e0] text-[13px] mb-1">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              onChange={handleChange}
+              value={formData.password}
+              placeholder="Enter password"
+              className="w-full h-12 bg-[#dee5f12e] rounded-lg px-[17px] text-white placeholder:text-[#b4c1d9]"
+              required
+            />
+          </div>
+
+          {/* Error */}
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+
+          {/* Register Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="relative h-[45px] mt-[38px] rounded-lg text-white text-base font-semibold bg-[linear-gradient(90deg,rgba(126,75,254,0.73)_7%,rgba(0,108,255,0.73)_47%,rgba(0,177,255,0.73)_100%)] hover:opacity-90 transition-opacity"
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+
+        {/* Sign In Section */}
+        <p className="mt-[51px] text-[#b4c1d9] text-xs text-center">
+          Already have a pass?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="font-medium underline hover:text-white transition-colors"
+          >
+            Sign in
+          </button>
+        </p>
+
+        {/* Logo */}
+        <img
+          className="mt-[38px] w-[178px] h-[157px] object-contain"
+          alt="Novartis logo"
+          src={novartislogotransparent2}
+        />
+        <img
+          className="mt-[-81px] w-[107px] h-[25px] object-contain"
+          alt="Novartis text"
+          src={novartislogotransparent1}
+        />
+      </div>
+    </main>
   );
 }

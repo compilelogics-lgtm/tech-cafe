@@ -2,9 +2,32 @@ import { useEffect, useState, useRef } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
+import { Link, useLocation } from "react-router-dom";
 
+// ---------------- Avatar Component ----------------
+const Avatar = ({ src, fallback, className }) => (
+  <div className={`relative flex rounded-full overflow-hidden ${className}`}>
+    {src ? (
+      <img src={src} alt="avatar" className="w-full h-full object-cover" />
+    ) : (
+      <div className="flex items-center justify-center w-full h-full bg-gray-400">{fallback}</div>
+    )}
+  </div>
+);
+
+// ---------------- Card ----------------
+const Card = ({ children, className }) => (
+  <div className={`rounded-xl shadow relative ${className}`}>{children}</div>
+);
+
+const CardContent = ({ children, className }) => (
+  <div className={`p-4 ${className}`}>{children}</div>
+);
+
+// ---------------- Leaderboard Page ----------------
 export default function Leaderboard() {
   const { user } = useAuth();
+  const location = useLocation();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
@@ -41,119 +64,156 @@ export default function Leaderboard() {
     }
   }, [users, user]);
 
-  if (loading) {
+  if (loading)
     return <div className="p-10 text-center text-white">Loading leaderboard...</div>;
-  }
 
   const topThree = users.slice(0, 3);
+ const podiumData = [
+    {
+      ...topThree[1], // 2nd
+      position: 2,
+      podiumColor: "bg-[#ff7a00]",
+      podiumHeight: "h-[70px]",
+    },
+    {
+      ...topThree[0], // 1st
+      position: 1,
+      podiumColor: "bg-[#00e0ff]",
+      podiumHeight: "h-[90px]",
+    },
+    {
+      ...topThree[2], // 3rd
+      position: 3,
+      podiumColor: "bg-[#ff3b5c]",
+      podiumHeight: "h-[60px]",
+    },
+  ].filter(Boolean);
+
+
+  const navigationItems = [
+    {
+      icon: "https://c.animaapp.com/mh3pk1prsdWs6B/img/iconoir-leaderboard-star.svg",
+      label: "Leaderboard",
+      path: "/attendee/leaderboard",
+    },
+    {
+      icon: "https://c.animaapp.com/mh3pk1prsdWs6B/img/et-map.svg",
+      label: "Map",
+      path: "/attendee/journey",
+    },
+    {
+      icon: "https://c.animaapp.com/mh3pk1prsdWs6B/img/healthicons-ui-user-profile-outline.svg",
+      label: "Profile",
+      path: "/attendee/profile",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 to-blue-800 text-white p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen w-full relative bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] text-white">
+      
+      {/* Background */}
+      <img
+        className="absolute w-full h-full top-0 left-0 object-cover"
+        src="https://c.animaapp.com/mh3pk1prsdWs6B/img/group.png"
+        alt="background"
+      />
+
+      <div className="relative z-10 flex flex-col items-center pt-28 px-6 pb-36">
         <h1 className="text-2xl font-bold text-center mb-1">LEADERBOARD</h1>
         <p className="text-center text-gray-300 mb-8">
           Who’s leading the event challenge?
         </p>
 
-        {/* 🥇 Podium for Top 3 */}
-        <div className="flex justify-center items-end gap-6 mb-12">
-          {topThree[1] && (
-            <div className="flex flex-col items-center scale-95 opacity-90">
-              <img
-                src={
-                  topThree[1].photoURL ||
-                  "https://via.placeholder.com/64?text=👤"
-                }
-                alt={topThree[1].name}
-                className="w-16 h-16 rounded-full border-4 border-gray-300 object-cover"
-              />
-              <div className="bg-gray-300 px-3 py-1 mt-2 rounded font-bold text-indigo-900">
-                🥈 {topThree[1].totalPoints} pts
-              </div>
-              <p className="mt-1 text-sm">{topThree[1].name}</p>
-            </div>
-          )}
+        {/* Podium Top 3 */}
+<div className="flex justify-center items-end gap-6 mb-12 relative">
+  {podiumData.map((p, idx) => (
+    <div key={p.id} className="flex flex-col items-center">
+      {/* Avatar */}
+      <Avatar
+        src={p.photoURL || "https://via.placeholder.com/64?text=👤"}
+        fallback={(p.name || "U").charAt(0)}
+        className="w-20 h-20 rounded-full border-4 border-white object-cover mb-2"
+      />
+      {/* Name */}
+      <div className="text-sm font-medium text-white mb-1">{p.name || "Unnamed"}</div>
+      {/* Podium Block */}
+      <div
+        className={`${p.podiumColor} ${p.podiumHeight} w-24 rounded-t-xl flex items-end justify-center`}
+      />
+      {/* Points */}
+      <div className="bg-white text-indigo-900 font-bold rounded px-2 mt-1">
+        {p.medal} {p.totalPoints || 0} pts
+      </div>
+    </div>
+  ))}
+</div>
 
-          {topThree[0] && (
-            <div className="flex flex-col items-center scale-110">
-              <img
-                src={
-                  topThree[0].photoURL ||
-                  "https://via.placeholder.com/80?text=👑"
-                }
-                alt={topThree[0].name}
-                className="w-20 h-20 rounded-full border-4 border-yellow-400 object-cover"
-              />
-              <div className="bg-yellow-400 px-3 py-1 mt-2 rounded font-bold text-indigo-900">
-                🥇 {topThree[0].totalPoints} pts
-              </div>
-              <p className="mt-1 font-medium">{topThree[0].name}</p>
-            </div>
-          )}
-
-          {topThree[2] && (
-            <div className="flex flex-col items-center scale-95 opacity-90">
-              <img
-                src={
-                  topThree[2].photoURL ||
-                  "https://via.placeholder.com/64?text=🏅"
-                }
-                alt={topThree[2].name}
-                className="w-16 h-16 rounded-full border-4 border-orange-400 object-cover"
-              />
-              <div className="bg-orange-400 px-3 py-1 mt-2 rounded font-bold text-indigo-900">
-                🥉 {topThree[2].totalPoints} pts
-              </div>
-              <p className="mt-1 text-sm">{topThree[2].name}</p>
-            </div>
-          )}
-        </div>
-
-        {/* 📜 Scrollable leaderboard */}
+        {/* Scrollable leaderboard */}
         <div
           ref={scrollRef}
-          className="bg-white/10 rounded-lg p-4 max-h-[220px] overflow-y-auto scroll-smooth"
-          style={{
-            scrollbarWidth: "thin",
-            scrollbarColor: "#4f46e5 transparent",
-          }}
+          className="bg-white/10 rounded-lg p-4 w-full max-w-md max-h-[300px] overflow-y-auto scroll-smooth mb-6"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#4f46e5 transparent" }}
         >
-          {users.map((u, index) => {
-            const rank = index + 1;
+          {users.map((u, idx) => {
             const isCurrentUser = user?.uid === u.id;
-
             return (
-              <div
+              <Card
                 key={u.id}
                 className={`flex justify-between items-center p-3 mb-2 rounded-md transition ${
-                  isCurrentUser
-                    ? "bg-indigo-600 scale-105"
-                    : "bg-white/5 hover:bg-white/20"
+                  isCurrentUser ? "bg-indigo-600 scale-105" : "bg-white/5 hover:bg-white/20"
                 }`}
-                style={{
-                  minHeight: "60px",
-                }}
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold w-6 text-center">
-                    {rank}
-                  </span>
-                  <img
-                    src={
-                      u.photoURL ||
-                      "https://via.placeholder.com/40?text=👤"
-                    }
-                    alt={u.name}
-                    className="w-10 h-10 rounded-full border border-white/30 object-cover"
-                  />
+                <CardContent className="flex items-center gap-3">
+                  <span className="text-lg font-bold w-6 text-center">{idx + 1}</span>
+                  <Avatar src={u.photoURL} fallback="👤" className="w-10 h-10 border border-white/30" />
                   <span>{u.name}</span>
-                </div>
+                </CardContent>
                 <span className="font-semibold">{u.totalPoints} pts</span>
-              </div>
+              </Card>
             );
           })}
         </div>
       </div>
+
+      {/* Bottom navigation */}
+ <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
+  <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
+    {navigationItems.map((item, index) => {
+      const isActive = location.pathname === item.path;
+      return (
+        <Link
+          key={index}
+          to={item.path}
+          className="flex flex-col items-center gap-0.5 transition-opacity hover:opacity-80"
+          aria-label={item.label}
+          aria-current={isActive ? "page" : undefined}
+        >
+          <img
+            className={`${
+              item.label === "Profile"
+                ? "w-[55px] h-[55px]"
+                : item.label === "Map"
+                ? "w-[41px] h-8"
+                : "w-[41px] h-[41px]"
+            }`}
+            alt={item.label}
+            src={item.icon}
+          />
+          <span
+            className={`[font-family:'Poppins',Helvetica] text-xs text-center tracking-[0] leading-[normal] ${
+              isActive
+                ? "font-medium text-[#00e0ffc4]"
+                : "font-light text-[#b4c1d9] text-[11px]"
+            }`}
+          >
+            {item.label}
+          </span>
+        </Link>
+      );
+    })}
+  </div>
+</nav>
+
     </div>
   );
 }

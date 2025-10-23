@@ -3,6 +3,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link } from "react-router-dom";
+import ModeratorNavbar from "../../components/ui/ModeratorNavbar";
 
 export default function ModeratorDashboard() {
   const { user } = useAuth();
@@ -11,13 +12,11 @@ export default function ModeratorDashboard() {
   const [attendeesCount, setAttendeesCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Load moderator's stations
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Fetch stations created by this moderator
         const stationQuery = query(
           collection(db, "stations"),
           where("createdBy", "==", user.uid)
@@ -27,19 +26,15 @@ export default function ModeratorDashboard() {
           id: d.id,
           ...d.data(),
         }));
-
         setStations(stationData);
 
-        // Fetch all scans for these stations
         const scanSnap = await getDocs(collection(db, "scans"));
         const allScans = scanSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
         const myScans = allScans.filter((s) =>
           stationData.some((st) => st.id === s.stationId)
         );
-
         setScans(myScans);
 
-        // Count unique attendees scanned at their stations
         const uniqueUsers = new Set(myScans.map((s) => s.userId));
         setAttendeesCount(uniqueUsers.size);
       } catch (err) {
@@ -60,105 +55,84 @@ export default function ModeratorDashboard() {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-indigo-800 text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2 text-center">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <ModeratorNavbar />
+
+      <div className="max-w-6xl mx-auto p-4 md:p-8">
+        <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center mt-6">
           🧭 Moderator Dashboard
         </h1>
-        <p className="text-center text-gray-300 mb-8">
+        <p className="text-center text-gray-300 mb-8 md:text-lg">
           Overview of your stations, scans, and attendee participation
         </p>
 
-        {/* Summary Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white/10 rounded-xl p-6 text-center border border-white/20">
-            <h2 className="text-4xl font-bold text-yellow-300">
-              {stations.length}
-            </h2>
-            <p className="text-gray-300 mt-2">Your Active Stations</p>
+        {/* Quick Stats */}
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+          <div className="bg-indigo-500 hover:bg-indigo-600 rounded-xl text-center py-6 transition shadow-lg">
+            <h3 className="text-lg font-semibold mb-2">Stations</h3>
+            <p className="text-3xl font-bold">{stations.length}</p>
           </div>
-
-          <div className="bg-white/10 rounded-xl p-6 text-center border border-white/20">
-            <h2 className="text-4xl font-bold text-green-300">{scans.length}</h2>
-            <p className="text-gray-300 mt-2">Total Scans Logged</p>
+          <div className="bg-cyan-500 hover:bg-cyan-600 rounded-xl text-center py-6 transition shadow-lg">
+            <h3 className="text-lg font-semibold mb-2">Total Scans</h3>
+            <p className="text-3xl font-bold">{scans.length}</p>
           </div>
-
-          <div className="bg-white/10 rounded-xl p-6 text-center border border-white/20">
-            <h2 className="text-4xl font-bold text-indigo-300">
-              {attendeesCount}
-            </h2>
-            <p className="text-gray-300 mt-2">Unique Attendees</p>
+          <div className="bg-teal-500 hover:bg-teal-600 rounded-xl text-center py-6 transition shadow-lg">
+            <h3 className="text-lg font-semibold mb-2">Attendees</h3>
+            <p className="text-3xl font-bold">{attendeesCount}</p>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
           <Link
             to="/moderator/generate-qr"
-            className="bg-indigo-600 hover:bg-indigo-700 rounded-xl text-center py-6 transition border border-white/20"
+            className="bg-indigo-500 hover:bg-indigo-600 rounded-xl text-center py-6 transition border border-white/20 shadow-lg"
           >
             <h3 className="text-lg font-semibold mb-1">Generate QR Codes</h3>
-            <p className="text-gray-300 text-sm">Create new event station codes</p>
+            <p className="text-gray-200 text-sm">Create new event station codes</p>
           </Link>
 
           <Link
             to="/moderator/stations"
-            className="bg-blue-600 hover:bg-blue-700 rounded-xl text-center py-6 transition border border-white/20"
+            className="bg-cyan-500 hover:bg-cyan-600 rounded-xl text-center py-6 transition border border-white/20 shadow-lg"
           >
             <h3 className="text-lg font-semibold mb-1">Manage Stations</h3>
-            <p className="text-gray-300 text-sm">Edit, activate or deactivate</p>
+            <p className="text-gray-200 text-sm">Edit, activate or deactivate</p>
           </Link>
 
           <Link
             to="/moderator/attendee-management"
-            className="bg-green-600 hover:bg-green-700 rounded-xl text-center py-6 transition border border-white/20"
+            className="bg-teal-500 hover:bg-teal-600 rounded-xl text-center py-6 transition border border-white/20 shadow-lg"
           >
             <h3 className="text-lg font-semibold mb-1">Attendee Manager</h3>
-            <p className="text-gray-300 text-sm">Mark participation & view progress</p>
+            <p className="text-gray-200 text-sm">Mark participation & view progress</p>
           </Link>
         </div>
 
-        {/* Station Summary Table */}
-        <div className="bg-white/10 rounded-xl border border-white/20 p-6">
-          <h2 className="text-xl font-semibold mb-4">📍 Your Stations Overview</h2>
-
+        {/* Stations Table */}
+        <div className="bg-white/10 rounded-xl border border-white/20 p-6 overflow-x-auto">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4">📍 Your Stations Overview</h2>
           {stations.length === 0 ? (
             <p className="text-gray-400">No stations created yet.</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-white/10 text-gray-300 uppercase text-xs">
-                  <tr>
-                    <th className="px-4 py-2 text-left">Station Name</th>
-                    <th className="px-4 py-2 text-center">Points</th>
-                    <th className="px-4 py-2 text-center">Active</th>
-                    <th className="px-4 py-2 text-center">Scans</th>
+            <table className="min-w-full text-sm md:text-base border-collapse">
+              <thead className="bg-white/10 text-gray-300 uppercase text-xs md:text-sm">
+                <tr>
+                  <th className="px-4 py-2 text-left">Station Name</th>
+                  <th className="px-4 py-2 text-center">Points</th>
+                  <th className="px-4 py-2 text-center">Active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stations.map((st) => (
+                  <tr key={st.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <td className="px-4 py-2">{st.name}</td>
+                    <td className="px-4 py-2 text-center">{st.points ?? 0}</td>
+                    <td className="px-4 py-2 text-center">{st.active ? "✅" : "❌"}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {stations.map((st) => {
-                    const scanCount = scans.filter(
-                      (s) => s.stationId === st.id
-                    ).length;
-                    return (
-                      <tr
-                        key={st.id}
-                        className="border-b border-white/10 hover:bg-white/5"
-                      >
-                        <td className="px-4 py-2">{st.name}</td>
-                        <td className="px-4 py-2 text-center">
-                          {st.points ?? 0}
-                        </td>
-                        <td className="px-4 py-2 text-center">
-                          {st.active ? "✅" : "❌"}
-                        </td>
-                        <td className="px-4 py-2 text-center">{scanCount}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

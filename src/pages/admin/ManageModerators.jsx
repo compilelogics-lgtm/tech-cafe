@@ -11,6 +11,7 @@ import {
 import { httpsCallable } from "firebase/functions";
 import { db, functions } from "../../utils/firebase";
 import { toast } from "react-hot-toast";
+import AdminNavbar from "../../components/ui/AdminNavbar";
 
 export default function ManageUsers() {
   const [users, setUsers] = useState([]);
@@ -19,9 +20,6 @@ export default function ManageUsers() {
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
 
-  // ------------------------------------------------------------------
-  // 🔹 Fetch existing moderators
-  // ------------------------------------------------------------------
   const fetchModerators = async () => {
     setLoading(true);
     try {
@@ -41,9 +39,6 @@ export default function ManageUsers() {
     fetchModerators();
   }, []);
 
-  // ------------------------------------------------------------------
-  // 🔹 Handle create moderator
-  // ------------------------------------------------------------------
   const handleCreateModerator = async (e) => {
     e.preventDefault();
     setCreating(true);
@@ -53,6 +48,7 @@ export default function ManageUsers() {
         name: form.name.trim(),
         email: form.email.trim(),
         password: form.password.trim(),
+        emailVerified: true,
       };
 
       if (!payload.name || !payload.email || !payload.password) {
@@ -75,9 +71,6 @@ export default function ManageUsers() {
     }
   };
 
-  // ------------------------------------------------------------------
-  // 🔹 Handle edit moderator
-  // ------------------------------------------------------------------
   const handleEdit = (user) => {
     setEditingUser(user);
     setForm({ name: user.name, email: user.email, password: "" });
@@ -103,9 +96,6 @@ export default function ManageUsers() {
     }
   };
 
-  // ------------------------------------------------------------------
-  // 🔹 Handle delete moderator
-  // ------------------------------------------------------------------
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this moderator?")) return;
     try {
@@ -118,125 +108,134 @@ export default function ManageUsers() {
     }
   };
 
-  // ------------------------------------------------------------------
-  // 🔹 Render
-  // ------------------------------------------------------------------
   if (loading)
-    return <p className="text-center mt-10 text-lg">Loading users...</p>;
+    return <p className="text-center p-10 text-lg">Loading users...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6">Manage Moderators</h1>
+    <>
+      <AdminNavbar />
+      <div className="min-h-screen bg-gray-100 p-6 pt-20">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
+            🛠 Manage Moderators
+          </h1>
 
-      {/* ───────────────────────────── CREATE / EDIT MODERATOR ───────────────────────────── */}
-      <div className="bg-white p-6 rounded-xl shadow-md mb-10">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          {editingUser ? "Edit Moderator" : "Create Moderator"}
-        </h2>
+          {/* CREATE / EDIT MODERATOR CARD */}
+          <div className="bg-white rounded-xl shadow p-6 mb-10">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              {editingUser ? "Edit Moderator" : "Create Moderator"}
+            </h2>
 
-        <form
-          onSubmit={editingUser ? handleUpdate : handleCreateModerator}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4"
-        >
-          <input
-            type="text"
-            placeholder="Full Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="border p-3 rounded-lg"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="border p-3 rounded-lg"
-          />
-          {!editingUser && (
-            <input
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="border p-3 rounded-lg"
-            />
-          )}
-
-          <button
-            type="submit"
-            disabled={creating}
-            className={`${
-              creating ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-            } text-white p-3 rounded-lg transition`}
-          >
-            {editingUser
-              ? "Update Moderator"
-              : creating
-              ? "Creating..."
-              : "Create Moderator"}
-          </button>
-
-          {editingUser && (
-            <button
-              type="button"
-              onClick={() => {
-                setEditingUser(null);
-                setForm({ name: "", email: "", password: "" });
-              }}
-              className="bg-gray-400 hover:bg-gray-500 text-white p-3 rounded-lg"
+            <form
+              onSubmit={editingUser ? handleUpdate : handleCreateModerator}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4"
             >
-              Cancel
-            </button>
-          )}
-        </form>
-      </div>
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {!editingUser && (
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              )}
 
-      {/* ───────────────────────────── MODERATOR LIST ───────────────────────────── */}
-      <div className="p-6 rounded-xl shadow-md bg-white">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Moderators ({users.length})
-        </h2>
+              <button
+                type="submit"
+                disabled={creating}
+                className={`${
+                  creating ? "bg-gray-400" : "bg-gray-800 hover:bg-gray-900"
+                } text-white p-3 rounded-lg transition`}
+              >
+                {editingUser
+                  ? "Update Moderator"
+                  : creating
+                  ? "Creating..."
+                  : "Create Moderator"}
+              </button>
 
-        {users.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">No moderators found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-gray-200 text-left text-gray-800">
-                  <th className="p-3 border">Name</th>
-                  <th className="p-3 border">Email</th>
-                  <th className="p-3 border">Role</th>
-                  <th className="p-3 border text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u.id} className="text-gray-800 hover:bg-gray-50">
-                    <td className="p-3 border">{u.name}</td>
-                    <td className="p-3 border">{u.email}</td>
-                    <td className="p-3 border font-semibold">{u.role}</td>
-                    <td className="p-3 border text-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(u)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(u.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              {editingUser && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingUser(null);
+                    setForm({ name: "", email: "", password: "" });
+                  }}
+                  className="bg-gray-400 hover:bg-gray-500 text-white p-3 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+              )}
+            </form>
           </div>
-        )}
+
+          {/* MODERATOR LIST CARD */}
+          <div className="bg-white rounded-xl shadow p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Moderators ({users.length})
+            </h2>
+
+            {users.length === 0 ? (
+              <p className="text-center text-gray-400 py-4 italic">
+                No moderators found.
+              </p>
+            ) : (
+              <div className="overflow-x-auto rounded-lg">
+                <table className="min-w-full text-left border-collapse">
+                  <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Email</th>
+                      <th className="px-4 py-3">Role</th>
+                      <th className="px-4 py-3 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((u) => (
+                      <tr
+                        key={u.id}
+                        className="border-b hover:bg-gray-50 transition"
+                      >
+                        <td className="px-4 py-3">{u.name}</td>
+                        <td className="px-4 py-3 text-gray-600">{u.email}</td>
+                        <td className="px-4 py-3 font-semibold">{u.role}</td>
+                        <td className="px-4 py-3 text-center space-x-2">
+                          <button
+                            onClick={() => handleEdit(u)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded transition"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(u.id)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

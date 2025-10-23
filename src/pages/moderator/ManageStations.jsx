@@ -4,8 +4,9 @@ import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import QRCode from "qrcode";
 import { useAuth } from "../../contexts/AuthContext";
 import toast, { Toaster } from "react-hot-toast";
+import ModeratorNavbar from "../../components/ui/ModeratorNavbar";
 
-const ManageStations = () => {
+export default function ManageStations() {
   const { user } = useAuth();
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,113 +68,129 @@ const ManageStations = () => {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-      <Toaster position="top-center" />
-      <h2 className="text-3xl font-semibold mb-6 text-blue-700">Manage Stations</h2>
+    <>
+      <ModeratorNavbar />
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col items-center py-10 px-4">
+        <Toaster position="top-center" />
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border text-sm text-gray-600">
-            <thead>
-              <tr className="bg-blue-50 text-left">
-                <th className="p-3">Name</th>
-                <th className="p-3">Points</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">QR</th>
-                {canEdit && <th className="p-3">Action</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {stations.map((s) => (
-                <tr key={s.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3">
-                    {editingId === s.id ? (
-                      <input
-                        className="border p-2 rounded w-full"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                      />
-                    ) : (
-                      s.name
-                    )}
-                  </td>
+        <div className="max-w-6xl w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-lg">
+          <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-indigo-400">
+            🗂 Manage Stations
+          </h1>
+          <p className="text-center text-gray-300 mb-8">
+            Edit, deactivate, or view QR codes of your event stations
+          </p>
 
-                  <td className="p-3">
-                    {editingId === s.id ? (
-                      <input
-                        type="number"
-                        className="border p-2 rounded w-full"
-                        value={editPoints}
-                        onChange={(e) => setEditPoints(e.target.value)}
-                      />
-                    ) : (
-                      s.points
-                    )}
-                  </td>
+          {loading ? (
+            <p className="text-center text-gray-400">Loading stations...</p>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-white/20">
+              <table className="min-w-full text-sm md:text-base">
+                <thead className="bg-white/10 text-gray-300 uppercase text-xs md:text-sm">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Name</th>
+                    <th className="px-4 py-3 text-center">Points</th>
+                    <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-4 py-3 text-center">QR Code</th>
+                    {canEdit && <th className="px-4 py-3 text-center">Action</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {stations.map((s) => (
+                    <tr
+                      key={s.id}
+                      className="border-b border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        {editingId === s.id ? (
+                          <input
+                            className="w-full p-2 rounded bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                          />
+                        ) : (
+                          s.name
+                        )}
+                      </td>
 
-                  <td className="p-3">
-                    {s.active ? (
-                      <span className="text-green-600 font-semibold">Active</span>
-                    ) : (
-                      <span className="text-gray-400">Inactive</span>
-                    )}
-                  </td>
+                      <td className="px-4 py-3 text-center">
+                        {editingId === s.id ? (
+                          <input
+                            type="number"
+                            className="w-full p-2 rounded bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                            value={editPoints}
+                            onChange={(e) => setEditPoints(e.target.value)}
+                          />
+                        ) : (
+                          s.points
+                        )}
+                      </td>
 
-                  <td className="p-3">
-                    <img src={s.qrUrl} alt="QR" className="w-16 rounded-lg shadow-sm" />
-                  </td>
+                      <td className="px-4 py-3 text-center">
+                        {s.active ? (
+                          <span className="text-green-400 font-semibold">Active</span>
+                        ) : (
+                          <span className="text-gray-400 font-medium">Inactive</span>
+                        )}
+                      </td>
 
-                  {canEdit && (
-                    <td className="p-3 space-x-2">
-                      {editingId === s.id ? (
-                        <>
-                          <button
-                            onClick={() => saveEdit(s.id)}
-                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="text-gray-600 underline"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => {
-                              setEditingId(s.id);
-                              setEditName(s.name);
-                              setEditPoints(s.points);
-                            }}
-                            className="text-blue-600 underline"
-                          >
-                            Edit
-                          </button>
-                          {s.active && (
-                            <button
-                              onClick={() => deactivateStation(s.id)}
-                              className="text-red-600 underline"
-                            >
-                              Deactivate
-                            </button>
+                      <td className="px-4 py-3 text-center">
+                        <img
+                          src={s.qrUrl}
+                          alt="QR"
+                          className="w-16 h-16 rounded-lg shadow-md mx-auto"
+                        />
+                      </td>
+
+                      {canEdit && (
+                        <td className="px-4 py-3 text-center space-x-2">
+                          {editingId === s.id ? (
+                            <>
+                              <button
+                                onClick={() => saveEdit(s.id)}
+                                className="bg-green-500 hover:bg-green-600 px-3 py-1 rounded-lg text-white font-medium transition"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setEditingId(null)}
+                                className="text-gray-300 underline hover:text-white"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setEditingId(s.id);
+                                  setEditName(s.name);
+                                  setEditPoints(s.points);
+                                }}
+                                className="text-indigo-400 underline hover:text-indigo-200"
+                              >
+                                Edit
+                              </button>
+                              {s.active && (
+                                <button
+                                  onClick={() => deactivateStation(s.id)}
+                                  className="text-red-500 underline hover:text-red-400"
+                                >
+                                  Deactivate
+                                </button>
+                              )}
+                            </>
                           )}
-                        </>
+                        </td>
                       )}
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
-};
-
-export default ManageStations;
+}
