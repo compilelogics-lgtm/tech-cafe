@@ -224,39 +224,35 @@ export default function Profile() {
 
       <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
         <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
-          {navigationItems.map((item, index) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={index}
-                to={item.path}
-                className="flex flex-col items-center gap-0.5 transition-opacity hover:opacity-80"
-                aria-label={item.label}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <img
-                  className={`${
-                    item.label === "Profile"
-                      ? "w-[55px] h-[55px]"
-                      : item.label === "Map"
-                      ? "w-[41px] h-8"
-                      : "w-[41px] h-[41px]"
-                  }`}
-                  alt={item.label}
-                  src={item.icon}
-                />
-                <span
-                  className={`[font-family:'Poppins',Helvetica] text-xs text-center tracking-[0] leading-[normal] ${
-                    isActive
-                      ? "font-medium text-[#00e0ffc4]"
-                      : "font-light text-[#b4c1d9] text-[11px]"
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+          <button
+            onClick={() => navigate("/attendee/leaderboard")}
+            className="flex flex-col w-[71px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+          >
+            <img className="w-[41px] h-[41px]" alt="Leaderboard" src="https://c.animaapp.com/mh3vxzzxbLNePl/img/iconoir-leaderboard-star.svg" />
+            <span className="[font-family:'Poppins',Helvetica] font-light text-[#b4c1d9] text-[11px] text-center tracking-[0] leading-[normal]">
+              Leaderboard
+            </span>
+          </button>
+
+          <button
+            onClick={() => navigate("/attendee/journey")}
+            className="flex flex-col w-[60px] items-center h-auto p-0"
+          >
+            <img className="w-full h-[47px]" alt="Map" src="https://c.animaapp.com/mh3vxzzxbLNePl/img/et-map.svg" />
+            <span className="[font-family:'Poppins',Helvetica] font-medium text-[#00e0ffc4] text-xs text-center tracking-[0] leading-[normal]">
+              Map
+            </span>
+          </button>
+
+          <button
+            onClick={() => navigate("/attendee/profile")}
+            className="flex flex-col w-[41px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+          >
+            <img className="w-full h-[41px]" alt="Profile" src="https://c.animaapp.com/mh3vxzzxbLNePl/img/healthicons-ui-user-profile-outline.svg" />
+            <span className="[font-family:'Poppins',Helvetica] font-light text-[#b4c1d9] text-[11px] text-center tracking-[0] leading-[normal]">
+              Profile
+            </span>
+          </button>
         </div>
       </nav>
     </main>
