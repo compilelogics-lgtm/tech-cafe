@@ -8,9 +8,11 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../utils/firebase";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import React from "react";
 import { Link } from "react-router-dom";
+import profile1 from "../../assets/profile.png";
 
 // ---------------------- Embedded UI Components ----------------------
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -60,6 +62,7 @@ export default function Profile() {
   const [scans, setScans] = useState([]);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
+   const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -223,38 +226,54 @@ export default function Profile() {
       </div>
 
       <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
-        <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
-          <button
-            onClick={() => navigate("/attendee/leaderboard")}
-            className="flex flex-col w-[71px] items-center h-auto p-0 transition-opacity hover:opacity-80"
-          >
-            <img className="w-[41px] h-[41px]" alt="Leaderboard" src="https://c.animaapp.com/mh3vxzzxbLNePl/img/iconoir-leaderboard-star.svg" />
-            <span className="[font-family:'Poppins',Helvetica] font-light text-[#b4c1d9] text-[11px] text-center tracking-[0] leading-[normal]">
-              Leaderboard
-            </span>
-          </button>
+  <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
+    {/* Leaderboard Button */}
+    <button
+      onClick={() => navigate("/attendee/leaderboard")}
+      className="flex flex-col w-[71px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+    >
+      <img
+        className="w-[41px] h-[41px]"
+        alt="Leaderboard"
+        src="https://c.animaapp.com/mh3vxzzxbLNePl/img/iconoir-leaderboard-star.svg"
+      />
+      <span className="font-light text-[#b4c1d9] text-[11px] text-center">
+        Leaderboard
+      </span>
+    </button>
 
-          <button
-            onClick={() => navigate("/attendee/journey")}
-            className="flex flex-col w-[60px] items-center h-auto p-0"
-          >
-            <img className="w-full h-[47px]" alt="Map" src="https://c.animaapp.com/mh3vxzzxbLNePl/img/et-map.svg" />
-            <span className="[font-family:'Poppins',Helvetica] font-medium text-[#00e0ffc4] text-xs text-center tracking-[0] leading-[normal]">
-              Map
-            </span>
-          </button>
+    {/* Map Button */}
+    <button
+      onClick={() => navigate("/attendee/journey")}
+      className="flex flex-col w-[60px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+    >
+      <img
+        className="w-full h-[47px]"
+        alt="Map"
+        src="https://c.animaapp.com/mh3vxzzxbLNePl/img/et-map.svg"
+      />
+      <span className="font-medium text-[#00e0ffc4] text-xs text-center">
+        Map
+      </span>
+    </button>
 
-          <button
-            onClick={() => navigate("/attendee/profile")}
-            className="flex flex-col w-[41px] items-center h-auto p-0 transition-opacity hover:opacity-80"
-          >
-            <img className="w-full h-[41px]" alt="Profile" src="https://c.animaapp.com/mh3vxzzxbLNePl/img/healthicons-ui-user-profile-outline.svg" />
-            <span className="[font-family:'Poppins',Helvetica] font-light text-[#b4c1d9] text-[11px] text-center tracking-[0] leading-[normal]">
-              Profile
-            </span>
-          </button>
-        </div>
-      </nav>
+    {/* Profile Button (Active) */}
+    <button
+      onClick={() => navigate("/attendee/profile")}
+      className="flex flex-col w-[41px] items-center h-auto p-0"
+    >
+      <img
+        className="w-full"
+        alt="Profile"
+        src={profile1}
+      />
+      <span className="font-medium text-[#00e0ffc4] text-[11px] text-center">
+        Profile
+      </span>
+    </button>
+  </div>
+</nav>
+
     </main>
   );
 }

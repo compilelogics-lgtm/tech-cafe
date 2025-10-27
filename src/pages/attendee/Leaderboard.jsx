@@ -2,15 +2,35 @@ import { useEffect, useState, useRef } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import profile1 from "../../assets/profile.png";
 
+const navItems = [
+    {
+      label: "Leaderboard",
+      path: "/attendee/leaderboard",
+      icon: "https://c.animaapp.com/mh3vxzzxbLNePl/img/iconoir-leaderboard-star.svg",
+    },
+    {
+      label: "Map",
+      path: "/attendee/journey",
+      icon: "https://c.animaapp.com/mh3vxzzxbLNePl/img/et-map.svg",
+    },
+    {
+      label: "Profile",
+      path: "/attendee/profile",
+      icon: profile1, // local image for active profile
+    },
+  ];
 // ---------------- Avatar Component ----------------
 const Avatar = ({ src, fallback, className }) => (
   <div className={`relative flex rounded-full overflow-hidden ${className}`}>
     {src ? (
       <img src={src} alt="avatar" className="w-full h-full object-cover" />
     ) : (
-      <div className="flex items-center justify-center w-full h-full bg-gray-400">{fallback}</div>
+      <div className="flex items-center justify-center w-full h-full bg-gray-400">
+        {fallback}
+      </div>
     )}
   </div>
 );
@@ -31,6 +51,8 @@ export default function Leaderboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
+  
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -65,10 +87,12 @@ export default function Leaderboard() {
   }, [users, user]);
 
   if (loading)
-    return <div className="p-10 text-center text-white">Loading leaderboard...</div>;
+    return (
+      <div className="p-10 text-center text-white">Loading leaderboard...</div>
+    );
 
   const topThree = users.slice(0, 3);
- const podiumData = [
+  const podiumData = [
     {
       ...topThree[1], // 2nd
       position: 2,
@@ -88,7 +112,6 @@ export default function Leaderboard() {
       podiumHeight: "h-[60px]",
     },
   ].filter(Boolean);
-
 
   const navigationItems = [
     {
@@ -110,7 +133,6 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen w-full relative bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] text-white">
-      
       {/* Background */}
       <img
         className="absolute w-full h-full top-0 left-0 object-cover"
@@ -125,34 +147,39 @@ export default function Leaderboard() {
         </p>
 
         {/* Podium Top 3 */}
-<div className="flex justify-center items-end gap-6 mb-12 relative">
-  {podiumData.map((p, idx) => (
-    <div key={p.id} className="flex flex-col items-center">
-      {/* Avatar */}
-      <Avatar
-        src={p.photoURL || "https://via.placeholder.com/64?text=👤"}
-        fallback={(p.name || "U").charAt(0)}
-        className="w-20 h-20 rounded-full border-4 border-white object-cover mb-2"
-      />
-      {/* Name */}
-      <div className="text-sm font-medium text-white mb-1">{p.name || "Unnamed"}</div>
-      {/* Podium Block */}
-      <div
-        className={`${p.podiumColor} ${p.podiumHeight} w-24 rounded-t-xl flex items-end justify-center`}
-      />
-      {/* Points */}
-      <div className="bg-white text-indigo-900 font-bold rounded px-2 mt-1">
-        {p.medal} {p.totalPoints || 0} pts
-      </div>
-    </div>
-  ))}
-</div>
+        <div className="flex justify-center items-end gap-6 mb-12 relative">
+          {podiumData.map((p, idx) => (
+            <div key={p.id} className="flex flex-col items-center">
+              {/* Avatar */}
+              <Avatar
+                src={p.photoURL || "https://via.placeholder.com/64?text=👤"}
+                fallback={(p.name || "U").charAt(0)}
+                className="w-20 h-20 rounded-full border-4 border-white object-cover mb-2"
+              />
+              {/* Name */}
+              <div className="text-sm font-medium text-white mb-1">
+                {p.name || "Unnamed"}
+              </div>
+              {/* Podium Block */}
+              <div
+                className={`${p.podiumColor} ${p.podiumHeight} w-24 rounded-t-xl flex items-end justify-center`}
+              />
+              {/* Points */}
+              <div className="bg-white text-indigo-900 font-bold rounded px-2 mt-1">
+                {p.medal} {p.totalPoints || 0} pts
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Scrollable leaderboard */}
         <div
           ref={scrollRef}
           className="bg-white/10 rounded-lg p-4 w-full max-w-md max-h-[300px] overflow-y-auto scroll-smooth mb-6"
-          style={{ scrollbarWidth: "thin", scrollbarColor: "#4f46e5 transparent" }}
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#4f46e5 transparent",
+          }}
         >
           {users.map((u, idx) => {
             const isCurrentUser = user?.uid === u.id;
@@ -160,12 +187,20 @@ export default function Leaderboard() {
               <Card
                 key={u.id}
                 className={`flex justify-between items-center p-3 mb-2 rounded-md transition ${
-                  isCurrentUser ? "bg-indigo-600 scale-105" : "bg-white/5 hover:bg-white/20"
+                  isCurrentUser
+                    ? "bg-indigo-600 scale-105"
+                    : "bg-white/5 hover:bg-white/20"
                 }`}
               >
                 <CardContent className="flex items-center gap-3">
-                  <span className="text-lg font-bold w-6 text-center">{idx + 1}</span>
-                  <Avatar src={u.photoURL} fallback="👤" className="w-10 h-10 border border-white/30" />
+                  <span className="text-lg font-bold w-6 text-center">
+                    {idx + 1}
+                  </span>
+                  <Avatar
+                    src={u.photoURL}
+                    fallback="👤"
+                    className="w-10 h-10 border border-white/30"
+                  />
                   <span>{u.name}</span>
                 </CardContent>
                 <span className="font-semibold">{u.totalPoints} pts</span>
@@ -176,44 +211,35 @@ export default function Leaderboard() {
       </div>
 
       {/* Bottom navigation */}
- <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
-  <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
-    {navigationItems.map((item, index) => {
-      const isActive = location.pathname === item.path;
-      return (
-        <Link
-          key={index}
-          to={item.path}
-          className="flex flex-col items-center gap-0.5 transition-opacity hover:opacity-80"
-          aria-label={item.label}
-          aria-current={isActive ? "page" : undefined}
-        >
-          <img
-            className={`${
-              item.label === "Profile"
-                ? "w-[55px] h-[55px]"
-                : item.label === "Map"
-                ? "w-[41px] h-8"
-                : "w-[41px] h-[41px]"
-            }`}
-            alt={item.label}
-            src={item.icon}
-          />
-          <span
-            className={`[font-family:'Poppins',Helvetica] text-xs text-center tracking-[0] leading-[normal] ${
-              isActive
-                ? "font-medium text-[#00e0ffc4]"
-                : "font-light text-[#b4c1d9] text-[11px]"
-            }`}
-          >
-            {item.label}
-          </span>
-        </Link>
-      );
-    })}
-  </div>
-</nav>
-
+      <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
+      <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="flex flex-col items-center h-auto p-0 transition-opacity hover:opacity-80"
+            >
+              <img
+                className={`${
+                  item.label === "Profile" ? "w-full h-[41px]" : "w-[41px] h-[41px]"
+                }`}
+                src={item.icon}
+                alt={item.label}
+              />
+              <span
+                className={`text-[11px] text-center ${
+                  isActive ? "font-medium text-[#00e0ffc4]" : "font-light text-[#b4c1d9]"
+                }`}
+              >
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
     </div>
   );
 }

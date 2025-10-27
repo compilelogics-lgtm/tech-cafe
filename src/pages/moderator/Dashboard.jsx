@@ -67,7 +67,7 @@ export default function ModeratorDashboard() {
         </p>
 
         {/* Quick Stats */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+        {/* <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-indigo-500 hover:bg-indigo-600 rounded-xl text-center py-6 transition shadow-lg">
             <h3 className="text-lg font-semibold mb-2">Stations</h3>
             <p className="text-3xl font-bold">{stations.length}</p>
@@ -80,7 +80,7 @@ export default function ModeratorDashboard() {
             <h3 className="text-lg font-semibold mb-2">Attendees</h3>
             <p className="text-3xl font-bold">{attendeesCount}</p>
           </div>
-        </div>
+        </div> */}
 
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">

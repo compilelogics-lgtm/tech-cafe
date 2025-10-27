@@ -1,156 +1,352 @@
-import { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
-import { db } from "../../utils/firebase";
-import { saveAs } from "file-saver";
+// src/pages/admin/AdminReports.jsx
+import React, { useEffect, useMemo, useState } from "react";
 import AdminNavbar from "../../components/ui/AdminNavbar";
+import { db } from "../../utils/firebase";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  getDocs,
+} from "firebase/firestore";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+} from "recharts";
+
+/**
+ * AdminReports.jsx
+ * - Live analytics page for attendance & engagement
+ * - Uses Firestore onSnapshot for live updates (emulator-friendly)
+ * - Charts: Line (attendance growth), Pie (department engagement), Bar (points per event)
+ * - Dark glassy UI to match other admin pages
+ */
+
+// color palette for departments (auto-assign)
+const DEPT_COLORS = [
+  "#7c3aed", // purple
+  "#06b6d4", // cyan
+  "#f97316", // orange
+  "#ef4444", // red
+  "#10b981", // green
+  "#f59e0b", // amber
+  "#6366f1", // indigo
+  "#ec4899", // pink
+];
 
 export default function AdminReports() {
-  const [summary, setSummary] = useState({
-    attendees: 0,
-    moderators: 0,
-    stations: 0,
-    scans: 0,
-  });
-  const [topAttendees, setTopAttendees] = useState([]);
-  const [popularStations, setPopularStations] = useState([]);
-  const [recentScans, setRecentScans] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [participations, setParticipations] = useState([]);
+  const [stations, setStations] = useState([]);
+  const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // live listeners
   useEffect(() => {
-    const loadReports = async () => {
-      try {
-        const usersSnap = await getDocs(collection(db, "users"));
-        const stationsSnap = await getDocs(collection(db, "stations"));
-        const scansSnap = await getDocs(collection(db, "scans"));
+    let mounted = true;
+    setLoading(true);
 
-        const users = usersSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const stations = stationsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const scans = scansSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
+      if (!mounted) return;
+      setUsers(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
 
-        const attendees = users.filter((u) => u.role === "attendee").length;
-        const moderators = users.filter((u) => u.role === "moderator").length;
+    const unsubParts = onSnapshot(collection(db, "participations"), (snap) => {
+      if (!mounted) return;
+      setParticipations(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
 
-        const top = [...users]
-          .filter((u) => u.role === "attendee")
-          .sort((a, b) => b.totalPoints - a.totalPoints)
-          .slice(0, 5);
+    const unsubStations = onSnapshot(collection(db, "stations"), (snap) => {
+      if (!mounted) return;
+      setStations(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
 
-        const stationCounts = {};
-        scans.forEach((s) => {
-          stationCounts[s.stationId] = (stationCounts[s.stationId] || 0) + 1;
-        });
-        const popular = stations
-          .map((st) => ({ ...st, count: stationCounts[st.id] || 0 }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 5);
+    const unsubScans = onSnapshot(collection(db, "scans"), (snap) => {
+      if (!mounted) return;
+      setScans(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
 
-        const q = query(collection(db, "scans"), orderBy("scannedAt", "desc"), limit(5));
-        const recSnap = await getDocs(q);
-        const recent = recSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // small delay to allow first payloads
+    const t = setTimeout(() => setLoading(false), 300);
 
-        setSummary({ attendees, moderators, stations: stations.length, scans: scans.length });
-        setTopAttendees(top);
-        setPopularStations(popular);
-        setRecentScans(recent);
-      } catch (e) {
-        console.error("Error loading reports:", e);
-      } finally {
-        setLoading(false);
-      }
+    return () => {
+      mounted = false;
+      unsubUsers();
+      unsubParts();
+      unsubStations();
+      unsubScans();
+      clearTimeout(t);
     };
-
-    loadReports();
   }, []);
 
-  const exportCSV = () => {
-    const rows = [
-      ["Type", "Count"],
-      ["Attendees", summary.attendees],
-      ["Moderators", summary.moderators],
-      ["Stations", summary.stations],
-      ["Scans", summary.scans],
-    ];
-    const csvContent = rows.map((r) => r.join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "event_report.csv");
+  // helper to normalize Firestore timestamp -> JS Date
+  const toDate = (v) => {
+    if (!v) return null;
+    if (typeof v.toDate === "function") return v.toDate();
+    if (v.seconds && typeof v.seconds === "number") return new Date(v.seconds * 1000);
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  if (loading) return <div className="p-10 text-center">Loading reports...</div>;
+  // ---------- Attendance Growth (line chart) ----------
+  // We'll aggregate participations by date -> count unique user check-ins per day
+  const attendanceByDay = useMemo(() => {
+    // map dateKey -> set of userIds
+    const map = {};
+    participations.forEach((p) => {
+      const dt = toDate(p.markedAt || p.marked_at || p.createdAt);
+      if (!dt) return;
+      const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(
+        dt.getDate()
+      ).padStart(2, "0")}`;
+      if (!map[key]) map[key] = new Set();
+      if (p.userId) map[key].add(p.userId);
+      else if (p.email) map[key].add(p.email);
+    });
+    // convert to sorted array
+    const arr = Object.keys(map)
+      .sort((a, b) => (a < b ? -1 : 1))
+      .map((k) => ({ date: k, attendees: map[k].size }));
+    return arr;
+  }, [participations]);
+
+  // ---------- Department engagement (pie) ----------
+  // Count participations per user's department (fall back to 'Unknown')
+  const deptEngagement = useMemo(() => {
+    // build userId -> department map
+    const deptOf = {};
+    users.forEach((u) => (deptOf[u.id] = u.department || "Unknown"));
+
+    const map = {};
+    participations.forEach((p) => {
+      const dept = deptOf[p.userId] || p.department || "Unknown";
+      map[dept] = (map[dept] || 0) + 1;
+    });
+
+    const arr = Object.keys(map)
+      .map((k) => ({ name: k, value: map[k] }))
+      .sort((a, b) => b.value - a.value);
+    return arr;
+  }, [participations, users]);
+
+  // ---------- Points per event (bar) ----------
+  const pointsPerEvent = useMemo(() => {
+    const map = {};
+    scans.forEach((s) => {
+      const sid = s.stationId || s.station;
+      const pts = Number(s.pointsEarned ?? s.points ?? 0);
+      map[sid] = (map[sid] || 0) + pts;
+    });
+    // map stationId -> name if available
+    return Object.keys(map)
+      .map((sid) => {
+        const st = stations.find((x) => x.id === sid) || stations.find((x) => x.stationId === sid);
+        return { name: st?.name || sid, points: map[sid] };
+      })
+      .sort((a, b) => b.points - a.points);
+  }, [scans, stations]);
+
+  // ---------- Department insights (top dept, highest individual points, avg check-ins) ----------
+  const deptInsights = useMemo(() => {
+    // top department by total points: sum user.totalPoints grouped by department
+    const deptSum = {};
+    users.forEach((u) => {
+      const d = u.department || "Unknown";
+      deptSum[d] = (deptSum[d] || 0) + (Number(u.totalPoints) || 0);
+    });
+    const topDept = Object.keys(deptSum).length
+      ? Object.entries(deptSum).sort((a, b) => b[1] - a[1])[0]
+      : ["—", 0];
+
+    // highest individual points
+    const maxUser = users.length
+      ? users.reduce((mx, u) => ((Number(u.totalPoints) || 0) > (Number(mx.totalPoints) || 0) ? u : mx), users[0])
+      : null;
+
+    // average check-ins per user -> participations.length / number of unique users
+    const uniqueUsers = new Set(participations.map((p) => p.userId || p.email)).size || 0;
+    const avgCheckins = uniqueUsers ? (participations.length / uniqueUsers).toFixed(2) : "0.00";
+
+    return {
+      topDepartment: { name: topDept[0], totalPoints: topDept[1] || 0 },
+      highestIndividual: { name: maxUser?.name || maxUser?.email || "—", points: maxUser?.totalPoints || 0 },
+      avgCheckins,
+      totalParticipations: participations.length,
+    };
+  }, [users, participations]);
+
+  // ---------- Misc summary stats ----------
+  const summary = useMemo(() => {
+    const attendees = users.filter((u) => u.role === "attendee").length;
+    const moderators = users.filter((u) => u.role === "moderator").length;
+    return {
+      attendees,
+      moderators,
+      stations: stations.length,
+      participations: participations.length,
+      scans: scans.length,
+    };
+  }, [users, stations, participations, scans]);
+
+  // pie colors assignment
+  const pieColors = useMemo(() => {
+    return deptEngagement.map((_, i) => DEPT_COLORS[i % DEPT_COLORS.length]);
+  }, [deptEngagement]);
+
+  if (loading)
+    return (
+      <>
+        <AdminNavbar />
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 pt-20">
+          <div className="max-w-6xl mx-auto text-center py-20">
+            <div className="text-lg">Loading reports...</div>
+          </div>
+        </div>
+      </>
+    );
 
   return (
     <>
       <AdminNavbar />
-      <div className="min-h-screen bg-gray-100 p-6 pt-20">
-         {/* Export */}
-          {/* <div className="text-center mt-6">
-            <button
-              onClick={exportCSV}
-              className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded transition"
-            >
-              Export Summary (CSV)
-            </button>
-          </div> */}
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">
-            📊 Event Reports
-          </h1>
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 pt-20">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <header className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">Reports & Analytics</h1>
+              <p className="text-sm text-gray-300 mt-1">Attendance, engagement and points overview (live)</p>
+            </div>
+          </header>
 
-          {/* Summary cards */}
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: "Attendees", value: summary.attendees },
-              { label: "Moderators", value: summary.moderators },
-              { label: "Stations", value: summary.stations },
-              { label: "Scans", value: summary.scans },
-            ].map((card, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl shadow hover:shadow-md p-4 text-center transition"
-              >
-                <p className="text-gray-700 text-lg">{card.label}</p>
-                <h2 className="text-gray-900 text-3xl font-bold mt-2">{card.value}</h2>
-              </div>
-            ))}
+          {/* summary cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard title="Attendees" value={summary.attendees} />
+            <StatCard title="Moderators" value={summary.moderators} />
+            <StatCard title="Stations" value={summary.stations} />
+            <StatCard title="Participations" value={summary.participations} />
           </div>
 
-          {/* Two-column layout for top attendees/popular stations and recent scans */}
-          <div className="grid lg:grid-cols-2 gap-6">
+          {/* main content grid */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Large: Attendance growth + department insights */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Top Attendees */}
-              <Section title="🏅 Top Attendees">
-                {topAttendees.map((a, i) => (
-                  <li key={a.id} className="flex justify-between border-b border-gray-200 py-2">
-                    <span>#{i + 1} {a.name}</span>
-                    <span className="font-semibold">{a.totalPoints} pts</span>
-                  </li>
-                ))}
-              </Section>
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold">Attendance Growth</h2>
+                  <div className="text-sm text-gray-300">Unique attendees per day</div>
+                </div>
 
-              {/* Popular Stations */}
-              <Section title="📍 Most Popular Stations">
-                {popularStations.map((st, i) => (
-                  <li key={st.id} className="flex justify-between border-b border-gray-200 py-2">
-                    <span>#{i + 1} {st.name}</span>
-                    <span className="font-semibold">{st.count} visits</span>
-                  </li>
-                ))}
-              </Section>
+                <div style={{ width: "100%", height: 320 }}>
+                  <ResponsiveContainer>
+                    <LineChart data={attendanceByDay}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#111827" />
+                      <XAxis dataKey="date" stroke="#9CA3AF" />
+                      <YAxis stroke="#9CA3AF" />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="attendees" stroke="#06b6d4" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <div className="grid sm:grid-cols-3 gap-4">
+                <Card>
+                  <h3 className="text-sm text-gray-300">Top Department</h3>
+                  <div className="mt-2">
+                    <div className="text-lg font-semibold">{deptInsights.topDepartment.name}</div>
+                    <div className="text-sm text-gray-400">{deptInsights.topDepartment.totalPoints} total points</div>
+                  </div>
+                </Card>
+
+                <Card>
+                  <h3 className="text-sm text-gray-300">Highest Individual Points</h3>
+                  <div className="mt-2">
+                    <div className="text-lg font-semibold">{deptInsights.highestIndividual.name}</div>
+                    <div className="text-sm text-gray-400">{deptInsights.highestIndividual.points} pts</div>
+                  </div>
+                </Card>
+
+                <Card>
+                  <h3 className="text-sm text-gray-300">Avg Check-ins / User</h3>
+                  <div className="mt-2">
+                    <div className="text-lg font-semibold">{deptInsights.avgCheckins}</div>
+                    <div className="text-sm text-gray-400">{deptInsights.totalParticipations} total participations</div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Right column: Pie + Bars */}
+            <div className="space-y-6">
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold">Department Engagement</h2>
+                  <div className="text-sm text-gray-300">By participations</div>
+                </div>
+
+                <div style={{ width: "100%", height: 240 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie dataKey="value" data={deptEngagement} nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4}>
+                        {deptEngagement.map((entry, idx) => (
+                          <Cell key={entry.name} fill={pieColors[idx % pieColors.length]} />
+                        ))}
+                      </Pie>
+                      <Legend verticalAlign="bottom" wrapperStyle={{ color: "#cbd5e1", fontSize: 12 }} />
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold">Points per Event</h2>
+                  <div className="text-sm text-gray-300">Total points earned at each station</div>
+                </div>
+
+                <div style={{ width: "100%", height: 260 }}>
+                  <ResponsiveContainer>
+                    <BarChart data={pointsPerEvent}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#111827" />
+                      <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
+                      <YAxis stroke="#9CA3AF" />
+                      <Tooltip />
+                      <Bar dataKey="points" fill="#7c3aed" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
             </div>
           </div>
-
-         
         </div>
       </div>
     </>
   );
 }
 
-// Reusable section wrapper
-function Section({ title, children }) {
+/* ---------------- Small UI components ---------------- */
+
+function Card({ children }) {
+  return <div className="bg-white/6 rounded-2xl p-4 shadow-lg backdrop-blur-md border border-white/6">{children}</div>;
+}
+
+function StatCard({ title, value }) {
   return (
-    <div className="bg-white rounded-xl shadow p-4">
-      <h2 className="text-xl font-semibold mb-3 text-gray-700">{title}</h2>
-      <ul className="space-y-1">{children}</ul>
+    <div className="bg-white/6 rounded-2xl p-4 shadow-lg backdrop-blur-md border border-white/6 text-center">
+      <div className="text-sm text-gray-300">{title}</div>
+      <div className="text-3xl font-bold mt-2">{value}</div>
     </div>
   );
 }

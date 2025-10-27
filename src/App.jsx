@@ -27,6 +27,8 @@ import ManageUsers from "./pages/admin/ManageModerators";
 import ManageAttendees from "./pages/admin/ManageAttendees";
 import ManageStationsAdmin from "./pages/admin/ManageStations";
 import AdminReports from "./pages/admin/AdminReports";
+import Stations from "./pages/admin/PointsRewards";
+import Notification from "./pages/admin/AdminNotifications";
 
 // ----------------------------------------------------------------------
 // HOME COMPONENT (Smart Redirector + Public Welcome Fallback)
@@ -227,6 +229,22 @@ export default function App() {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminReports />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/points"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Stations />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/notification"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Notification />
           </ProtectedRoute>
         }
       />
