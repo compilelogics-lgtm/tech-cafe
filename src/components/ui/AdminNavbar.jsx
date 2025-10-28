@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { FiMenu, FiX, FiSearch } from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
-import logo from "../../assets/novartis-logo-transparent-1.png";
+import logo from "../../assets/navlogo.png";
 
 export default function AdminNavbar() {
   const { logout, user } = useAuth();
@@ -19,7 +19,6 @@ export default function AdminNavbar() {
     { name: "Reports", path: "/admin/reports" },
     { name: "Points & Rewards", path: "/admin/points" },
     { name: "Notifications", path: "/admin/notification" },
-    // { name: "Settings", path: "/admin/settings" },
   ];
 
   const toggleMobileMenu = () => setMobileOpen(!mobileOpen);
@@ -32,18 +31,21 @@ export default function AdminNavbar() {
 
   return (
     <nav className="bg-[#14141B] text-white shadow-md font-[Poppins] border-b border-[#224E61]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Left - Brand */}
+          {/* Brand */}
           <div className="flex items-center gap-3">
             <img
               src={logo}
               alt="Novartis Logo"
               className="w-12 h-12 object-contain"
             />
+            <span className="text-m font-semibold text-white">
+              Tech Café Admin
+            </span>
           </div>
 
-          {/* Center - Nav Links */}
+          {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-8">
             {links.map((link) => {
               const isActive = location.pathname === link.path;
@@ -63,10 +65,8 @@ export default function AdminNavbar() {
             })}
           </div>
 
-          {/* Right - Icons */}
+          {/* Desktop Logout */}
           <div className="hidden md:flex items-center gap-5">
-            <FiSearch size={20} className="text-white/80 hover:text-[#00E0FF]" />
-            <FaUserCircle size={26} className="text-white/80 hover:text-[#00E0FF]" />
             <button
               onClick={handleLogout}
               className="ml-3 px-3 py-1 text-sm bg-red-600 hover:bg-red-700 rounded transition"
@@ -86,7 +86,7 @@ export default function AdminNavbar() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#1E1E28] border-t border-[#224E61] px-3 pt-3 pb-4 space-y-2">
+        <div className="md:hidden bg-[#1E1E28] border-t border-[#224E61] px-4 pt-4 pb-5 space-y-3">
           {links.map((link) => {
             const isActive = location.pathname === link.path;
             return (
@@ -94,7 +94,7 @@ export default function AdminNavbar() {
                 key={link.name}
                 to={link.path}
                 onClick={() => setMobileOpen(false)}
-                className={`block px-3 py-2 rounded text-sm ${
+                className={`block px-3 py-2 rounded text-sm transition ${
                   isActive
                     ? "bg-[#00E0FF]/20 text-[#00E0FF] font-medium"
                     : "text-white/90 hover:bg-[#00E0FF]/10"
@@ -104,11 +104,14 @@ export default function AdminNavbar() {
               </Link>
             );
           })}
-          <div className="flex items-center gap-3 pt-2">
-            <FaUserCircle size={22} className="text-white/70" />
-            <span className="text-sm text-white/80 flex-1 truncate">
-              {user?.email || "Admin"}
-            </span>
+
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#224E61] mt-2">
+            <div className="flex items-center gap-2">
+              <FaUserCircle size={22} className="text-white/70" />
+              <span className="text-sm text-white/80 truncate">
+                {user?.email || "Admin"}
+              </span>
+            </div>
             <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"

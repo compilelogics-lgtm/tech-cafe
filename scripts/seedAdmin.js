@@ -40,7 +40,7 @@ const seed = async () => {
     // 1️⃣ Admin Account
     // -----------------------------
     const email = "admin@gmail.com";
-    const password = "Admin@123";
+    const password = "admin@gmail.com";
 
     let user;
     try {
