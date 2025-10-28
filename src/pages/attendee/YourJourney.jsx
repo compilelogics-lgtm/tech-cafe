@@ -201,9 +201,9 @@ export default function Journey() {
       </header>
 
       <section className="absolute top-[200px] left-[calc(50%_-_190px)] w-[393px] h-[478px] translate-y-[-1rem] animate-fade-in opacity-0 [--animation-delay:400ms]">
-        <div className="absolute top-0 left-[47px] w-[261px] h-[460px]">
+        <div className="absolute top-0 left-[47px] w-[261px] h-[460px] z-20">
           {pathVectors.map((vector, i) => (
-            <img key={i} className={`${vector.position} ${vector.size}`} alt="Vector" src={vector.src} />
+            <img key={i} className={`${vector.position} ${vector.size} pointer-events-none`} alt="Vector" src={vector.src} />
           ))}
 
           {stations.map((station, index) => {
@@ -257,7 +257,7 @@ export default function Journey() {
         </div>
       </section>
 
-      <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
+      <nav className="fixed bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
         <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
           <button
             onClick={() => navigate("/attendee/leaderboard")}

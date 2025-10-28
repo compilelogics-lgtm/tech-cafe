@@ -109,20 +109,27 @@ export default function ManageUsers() {
   };
 
   if (loading)
-    return <p className="text-center p-10 text-lg">Loading users...</p>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 text-gray-200">
+        Loading users...
+      </div>
+    );
 
   return (
     <>
       <AdminNavbar />
-      <div className="min-h-screen bg-gray-100 p-6 pt-20">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-100 p-6 pt-20">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">
+          <h1 className="text-3xl font-bold text-center mb-2">
             🛠 Manage Moderators
           </h1>
+          <p className="text-center text-gray-400 mb-6">
+            Add, edit, or remove moderators from the system
+          </p>
 
           {/* CREATE / EDIT MODERATOR CARD */}
-          <div className="bg-white rounded-xl shadow p-6 mb-10">
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          <div className="bg-white/5 border border-white/10 rounded-2xl shadow-lg p-6 mb-10">
+            <h2 className="text-xl font-semibold mb-4 text-gray-100">
               {editingUser ? "Edit Moderator" : "Create Moderator"}
             </h2>
 
@@ -135,14 +142,14 @@ export default function ManageUsers() {
                 placeholder="Full Name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="p-3 rounded-lg bg-white/10 border border-white/10 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
               <input
                 type="email"
                 placeholder="Email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="p-3 rounded-lg bg-white/10 border border-white/10 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
               {!editingUser && (
                 <input
@@ -150,7 +157,7 @@ export default function ManageUsers() {
                   placeholder="Password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="p-3 rounded-lg bg-white/10 border border-white/10 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
               )}
 
@@ -158,8 +165,8 @@ export default function ManageUsers() {
                 type="submit"
                 disabled={creating}
                 className={`${
-                  creating ? "bg-gray-400" : "bg-gray-800 hover:bg-gray-900"
-                } text-white p-3 rounded-lg transition`}
+                  creating ? "bg-gray-600/60" : "bg-indigo-600 hover:bg-indigo-700"
+                } text-white font-semibold p-3 rounded-lg transition`}
               >
                 {editingUser
                   ? "Update Moderator"
@@ -175,7 +182,7 @@ export default function ManageUsers() {
                     setEditingUser(null);
                     setForm({ name: "", email: "", password: "" });
                   }}
-                  className="bg-gray-400 hover:bg-gray-500 text-white p-3 rounded-lg transition"
+                  className="bg-white/10 hover:bg-white/20 text-gray-100 p-3 rounded-lg transition"
                 >
                   Cancel
                 </button>
@@ -184,19 +191,19 @@ export default function ManageUsers() {
           </div>
 
           {/* MODERATOR LIST CARD */}
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          <div className="bg-white/5 border border-white/10 rounded-2xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-100">
               Moderators ({users.length})
             </h2>
 
             {users.length === 0 ? (
-              <p className="text-center text-gray-400 py-4 italic">
+              <p className="text-center text-gray-500 py-4 italic">
                 No moderators found.
               </p>
             ) : (
               <div className="overflow-x-auto rounded-lg">
-                <table className="min-w-full text-left border-collapse">
-                  <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase text-xs">
+                <table className="min-w-full text-left border-collapse text-gray-200">
+                  <thead className="border-b border-white/10 text-gray-400 uppercase text-xs">
                     <tr>
                       <th className="px-4 py-3">Name</th>
                       <th className="px-4 py-3">Email</th>
@@ -208,11 +215,13 @@ export default function ManageUsers() {
                     {users.map((u) => (
                       <tr
                         key={u.id}
-                        className="border-b hover:bg-gray-50 transition"
+                        className="border-t border-white/10 hover:bg-white/5 transition"
                       >
-                        <td className="px-4 py-3">{u.name}</td>
-                        <td className="px-4 py-3 text-gray-600">{u.email}</td>
-                        <td className="px-4 py-3 font-semibold">{u.role}</td>
+                        <td className="px-4 py-3 font-medium">{u.name}</td>
+                        <td className="px-4 py-3 text-gray-400">{u.email}</td>
+                        <td className="px-4 py-3 text-indigo-400 font-semibold">
+                          {u.role}
+                        </td>
                         <td className="px-4 py-3 text-center space-x-2">
                           <button
                             onClick={() => handleEdit(u)}
@@ -222,7 +231,7 @@ export default function ManageUsers() {
                           </button>
                           <button
                             onClick={() => handleDelete(u.id)}
-                            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition"
                           >
                             Delete
                           </button>

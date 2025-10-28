@@ -3,25 +3,28 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import profile1 from "../../assets/profile.png";
+import profile1 from "../../assets/profile-2.png";
+import leaderboard from "../../assets/leaderboard.png";
+import map from "../../assets/journey-2.png";
+
 
 const navItems = [
-    {
-      label: "Leaderboard",
-      path: "/attendee/leaderboard",
-      icon: "https://c.animaapp.com/mh3vxzzxbLNePl/img/iconoir-leaderboard-star.svg",
-    },
-    {
-      label: "Map",
-      path: "/attendee/journey",
-      icon: "https://c.animaapp.com/mh3vxzzxbLNePl/img/et-map.svg",
-    },
-    {
-      label: "Profile",
-      path: "/attendee/profile",
-      icon: profile1, // local image for active profile
-    },
-  ];
+  {
+    label: "Leaderboard",
+    path: "/attendee/leaderboard",
+    icon: leaderboard,
+  },
+  {
+    label: "Map",
+    path: "/attendee/journey",
+    icon: map,
+  },
+  {
+    label: "Profile",
+    path: "/attendee/profile",
+    icon: profile1, // local image for active profile
+  },
+];
 // ---------------- Avatar Component ----------------
 const Avatar = ({ src, fallback, className }) => (
   <div className={`relative flex rounded-full overflow-hidden ${className}`}>
@@ -52,7 +55,7 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
-  
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -113,24 +116,6 @@ export default function Leaderboard() {
     },
   ].filter(Boolean);
 
-  const navigationItems = [
-    {
-      icon: "https://c.animaapp.com/mh3pk1prsdWs6B/img/iconoir-leaderboard-star.svg",
-      label: "Leaderboard",
-      path: "/attendee/leaderboard",
-    },
-    {
-      icon: "https://c.animaapp.com/mh3pk1prsdWs6B/img/et-map.svg",
-      label: "Map",
-      path: "/attendee/journey",
-    },
-    {
-      icon: "https://c.animaapp.com/mh3pk1prsdWs6B/img/healthicons-ui-user-profile-outline.svg",
-      label: "Profile",
-      path: "/attendee/profile",
-    },
-  ];
-
   return (
     <div className="min-h-screen w-full relative bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] text-white">
       {/* Background */}
@@ -186,11 +171,10 @@ export default function Leaderboard() {
             return (
               <Card
                 key={u.id}
-                className={`flex justify-between items-center p-3 mb-2 rounded-md transition ${
-                  isCurrentUser
+                className={`flex justify-between items-center p-3 mb-2 rounded-md transition ${isCurrentUser
                     ? "bg-indigo-600 scale-105"
                     : "bg-white/5 hover:bg-white/20"
-                }`}
+                  }`}
               >
                 <CardContent className="flex items-center gap-3">
                   <span className="text-lg font-bold w-6 text-center">
@@ -211,35 +195,49 @@ export default function Leaderboard() {
       </div>
 
       {/* Bottom navigation */}
-      <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
-      <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className="flex flex-col items-center h-auto p-0 transition-opacity hover:opacity-80"
-            >
-              <img
-                className={`${
-                  item.label === "Profile" ? "w-full h-[41px]" : "w-[41px] h-[41px]"
-                }`}
-                src={item.icon}
-                alt={item.label}
-              />
-              <span
-                className={`text-[11px] text-center ${
-                  isActive ? "font-medium text-[#00e0ffc4]" : "font-light text-[#b4c1d9]"
-                }`}
-              >
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
+<nav className="fixed bottom-0 left-0 w-full h-[85px] bg-[#0f1930de] z-50">
+  <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
+    {navItems.map((item) => {
+      const isActive = location.pathname === item.path;
+
+      // width classes for consistent clickable area
+      const widthClass =
+        item.label === "Leaderboard"
+          ? "w-[71px]"
+          : item.label === "Map"
+          ? "w-[60px]"
+          : "w-[41px]";
+
+      return (
+        <button
+          key={item.path}
+          onClick={() => navigate(item.path)}
+          className={`flex flex-col items-center h-auto p-0 transition-opacity hover:opacity-80 ${widthClass}`}
+        >
+          <img
+            className={`${
+              item.label === "Profile"
+                ? "w-full h-[41px]"
+                : "w-[41px] h-[41px]"
+            }`}
+            src={item.icon}
+            alt={item.label}
+          />
+          <span
+            className={`text-[11px] text-center ${
+              isActive
+                ? "font-medium text-[#00e0ffc4]"
+                : "font-light text-[#b4c1d9]"
+            }`}
+          >
+            {item.label}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+</nav>
+
     </div>
   );
 }

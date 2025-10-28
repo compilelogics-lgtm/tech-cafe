@@ -13,6 +13,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import React from "react";
 import { Link } from "react-router-dom";
 import profile1 from "../../assets/profile.png";
+import leaderboard from "../../assets/leaderboard-2.png";
+import map from "../../assets/journey-2.png";
 
 // ---------------------- Embedded UI Components ----------------------
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -112,24 +114,7 @@ export default function Profile() {
   const progress =
     totalStations > 0 ? (completedStations / totalStations) * 100 : 0;
 
-  const navigationItems = [
-    {
-      icon: "https://c.animaapp.com/mh3hl0ofl3qLzT/img/iconoir-leaderboard-star.svg",
-      label: "Leaderboard",
-      path: "/attendee/leaderboard",
-    },
-    {
-      icon: "https://c.animaapp.com/mh3hl0ofl3qLzT/img/et-map.svg",
-      label: "Map",
-      path: "/attendee/journey",
-    },
-    {
-      icon: "https://c.animaapp.com/mh3hl0ofl3qLzT/img/healthicons-ui-user-profile-outline.svg",
-      label: "Profile",
-      path: "/attendee/profile",
-    },
-  ];
-
+ 
   return (
     <main className="overflow-hidden bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen relative flex justify-center items-start">
       {/* Background Image */}
@@ -225,7 +210,7 @@ export default function Profile() {
         </section>
       </div>
 
-      <nav className="absolute bottom-0 left-0 w-full h-[85px] bg-[#0f1930de]">
+      <nav className="fixed bottom-0 left-0 z-12 w-full h-[85px] bg-[#0f1930de]">
   <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
     {/* Leaderboard Button */}
     <button
@@ -235,7 +220,7 @@ export default function Profile() {
       <img
         className="w-[41px] h-[41px]"
         alt="Leaderboard"
-        src="https://c.animaapp.com/mh3vxzzxbLNePl/img/iconoir-leaderboard-star.svg"
+        src={leaderboard}
       />
       <span className="font-light text-[#b4c1d9] text-[11px] text-center">
         Leaderboard
@@ -250,7 +235,7 @@ export default function Profile() {
       <img
         className="w-full h-[47px]"
         alt="Map"
-        src="https://c.animaapp.com/mh3vxzzxbLNePl/img/et-map.svg"
+        src={map}
       />
       <span className="font-medium text-[#00e0ffc4] text-xs text-center">
         Map
