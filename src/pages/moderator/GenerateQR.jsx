@@ -70,18 +70,18 @@ export default function GenerateQR() {
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col items-center py-10 px-4">
         <Toaster position="top-center" />
 
-        <div className="max-w-2xl w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-lg">
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-2 text-indigo-400">
-            🧩 Generate Station QR
+        <div className="max-w-2xl w-full bg-[#1E1E28] border border-[#224E61] rounded-2xl p-8 shadow-[0_0_20px_#00E0FF20] backdrop-blur-md">
+          <h1 className="text-3xl md:text-4xl font-semibold text-center mb-2 text-[#00E0FF]">
+            Generate Station QR
           </h1>
-          <p className="text-center text-gray-300 mb-8">
-            Create a new station and generate its QR code instantly
+          <p className="text-center text-white/60 mb-8">
+            Create a new station and generate its QR code instantly.
           </p>
 
           {canCreate ? (
             <form onSubmit={handleGenerate} className="space-y-5">
               <div>
-                <label className="block mb-1 text-gray-300 font-medium">
+                <label className="block mb-1 text-white/70 font-medium">
                   Station Name
                 </label>
                 <input
@@ -89,12 +89,12 @@ export default function GenerateQR() {
                   placeholder="Enter station name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full p-3 rounded-lg bg-[#0000001a] border border-[#224E61] text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#00E0FF]"
                 />
               </div>
 
               <div>
-                <label className="block mb-1 text-gray-300 font-medium">
+                <label className="block mb-1 text-white/70 font-medium">
                   Description
                 </label>
                 <textarea
@@ -102,12 +102,12 @@ export default function GenerateQR() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
-                  className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full p-3 rounded-lg bg-[#0000001a] border border-[#224E61] text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-[#00E0FF]"
                 />
               </div>
 
               <div>
-                <label className="block mb-1 text-gray-300 font-medium">
+                <label className="block mb-1 text-white/70 font-medium">
                   Points
                 </label>
                 <input
@@ -115,14 +115,14 @@ export default function GenerateQR() {
                   placeholder="Enter points"
                   value={points}
                   onChange={(e) => setPoints(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  className="w-full p-3 rounded-lg bg-[#0000001a] border border-[#224E61] text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#00E0FF]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-indigo-500 hover:bg-indigo-600 text-white p-3 rounded-lg font-semibold transition disabled:opacity-60"
+                className="w-full bg-[#00E0FF] hover:bg-[#00C8E6] text-white font-semibold py-3 rounded-lg transition disabled:opacity-60"
               >
                 {loading ? "Generating..." : "Generate QR Code"}
               </button>
@@ -134,8 +134,8 @@ export default function GenerateQR() {
           )}
 
           {qrUrl && (
-            <div className="mt-10 text-center border-t border-white/10 pt-6">
-              <h3 className="text-lg font-semibold mb-4 text-gray-200">
+            <div className="mt-10 text-center border-t border-[#224E61]/30 pt-6">
+              <h3 className="text-lg font-semibold mb-4 text-white/80">
                 QR Code Preview
               </h3>
               <img

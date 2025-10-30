@@ -72,7 +72,12 @@ const Home = () => {
   // ⏳ Loading state
   if (loading || redirecting) {
     return (
-      <div className="text-center mt-10 p-10 text-xl font-semibold">
+      <div className="min-h-screen flex items-center justify-center" style={{
+          background: `
+      linear-gradient(248.32deg, rgba(34, 78, 97, 0.24) 1.53%, rgba(27, 55, 82, 0.85) 48.49%, #0D1B3A 95.44%),
+      linear-gradient(115.02deg, rgba(34, 78, 97, 0.64) 20.88%, #0D1B3A 100%)
+    `,
+        }}>
         {loading ? "Loading user profile..." : "Redirecting..."}
       </div>
     );
@@ -109,7 +114,7 @@ const Home = () => {
 // APP ROUTES
 // ----------------------------------------------------------------------
 export default function App() {
-  useAutoLogout(360 * 1000);
+  // useAutoLogout(360 * 1000);
   return (
     <Routes>
       {/* Public routes */}

@@ -174,7 +174,12 @@ export default function AdminDashboard() {
     return () => (mounted = false);
   }, [chartMode]);
 
-  if (loading) return <div className="text-center p-10 text-lg">Loading dashboard...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center" style={{
+          background: `
+      linear-gradient(248.32deg, rgba(34, 78, 97, 0.24) 1.53%, rgba(27, 55, 82, 0.85) 48.49%, #0D1B3A 95.44%),
+      linear-gradient(115.02deg, rgba(34, 78, 97, 0.64) 20.88%, #0D1B3A 100%)
+    `,
+        }}>Loading dashboard...</div>;
 
   const maxPoints = leaderboard[0]?.totalPoints || 1;
 

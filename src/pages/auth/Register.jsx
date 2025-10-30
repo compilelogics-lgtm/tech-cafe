@@ -8,7 +8,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { auth, db, storage } from "../../utils/firebase";
 import { useNavigate } from "react-router-dom";
-
+import QRCode from "qrcode";
 import group from "./../../assets/group.png";
 import novartislogotransparent1 from "./../../assets/novartis-logo-transparent-2-1-register.png";
 import novartislogotransparent2 from "./../../assets/novartis-logo-transparent-2-register.png";
@@ -70,6 +70,19 @@ export default function Register() {
       await updateProfile(user, { displayName: name, photoURL });
       await sendEmailVerification(user);
 
+  // --- Generate QR code containing user's UID ---
+  const qrCanvas = document.createElement("canvas");
+  const QRCode = await import("qrcode");
+  await QRCode.toCanvas(qrCanvas, user.uid);
+  const qrBlob = await new Promise((resolve) =>
+    qrCanvas.toBlob(resolve, "image/png")
+  );
+
+  // --- Upload QR code to Firebase Storage ---
+  const qrRef = ref(storage, `userQRCodes/${user.uid}.png`);
+  await uploadBytes(qrRef, qrBlob);
+  const qrCodeURL = await getDownloadURL(qrRef);
+
       await setDoc(doc(db, "users", user.uid), {
         name,
         department,
@@ -81,6 +94,7 @@ export default function Register() {
         prizeClaimed: false,
         stationsCompleted: [],
         photoURL,
+          qrCodeURL,
         createdAt: new Date(),
       });
 
@@ -97,7 +111,7 @@ export default function Register() {
   };
 
   return (
-    <main className="bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] w-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-white">
+    <main className="bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-white">
       <img
         className="absolute w-full h-full top-0 left-0 object-cover opacity-60"
         alt="Background pattern"
@@ -112,8 +126,6 @@ export default function Register() {
         <p className="text-[#b4c1d9] text-xs text-center mb-6">
           Fill in your details to join the Tech Café experience.
         </p>
-
-        {/* --- Profile Upload --- */}
         {/* --- Profile Upload --- */}
         <div className="relative flex flex-col items-center mb-6">
           <div className="relative">

@@ -18,7 +18,6 @@ import map from "../../assets/journey-2.png";
 
 // ---------------------- Embedded UI Components ----------------------
 const cn = (...classes) => classes.filter(Boolean).join(" ");
-
 const Card = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
@@ -32,7 +31,7 @@ const Card = React.forwardRef(({ className, ...props }, ref) => (
 Card.displayName = "Card";
 
 const CardContent = React.forwardRef(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
@@ -64,7 +63,14 @@ export default function Profile() {
   const [scans, setScans] = useState([]);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
-   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    // setMobileOpen(false);
+    navigate("/welcome", { replace: true });
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -114,7 +120,6 @@ export default function Profile() {
   const progress =
     totalStations > 0 ? (completedStations / totalStations) * 100 : 0;
 
- 
   return (
     <main className="overflow-hidden bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen relative flex justify-center items-start">
       {/* Background Image */}
@@ -136,27 +141,24 @@ export default function Profile() {
               <h2 className="[font-family:'Poppins',Helvetica] font-bold text-white text-base">
                 {profile?.name || "Unnamed User"}
               </h2>
-              <p className="[font-family:'Poppins',Helvetica] font-medium text-[#b4c1d9] text-xs">
+              {/* <p className="[font-family:'Poppins',Helvetica] font-medium text-[#b4c1d9] text-xs">
                 #{profile?.userId || user.uid}
-              </p>
+              </p> */}
               <p className="[font-family:'Poppins',Helvetica] font-bold text-[#8abde6] text-sm">
                 Total: {profile?.totalPoints ?? 0} pts
               </p>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+              <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center overflow-hidden">
                 <img
-                  className="w-12 h-12"
+                  className="w-24 h-24 object-contain"
                   alt="QR Code"
                   src={
-                    profile?.qrCode ||
+                    profile?.qrCodeURL ||
                     "https://c.animaapp.com/mh3hl0ofl3qLzT/img/la-qrcode.svg"
                   }
                 />
               </div>
-              <span className="[font-family:'Poppins',Helvetica] text-[#b4c1d9] text-xs">
-                My QR Code
-              </span>
             </div>
           </CardContent>
         </Card>
@@ -208,57 +210,48 @@ export default function Profile() {
             );
           })}
         </section>
+        {/* Logout Button */}
+        <div className="w-full flex justify-center mt-6 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:700ms]">
+          <button
+            onClick={handleLogout}
+            className="w-full sm:w-[85%] md:w-[75%] py-3 bg-gradient-to-r from-[#7e4ffe] via-[#006cff] to-[#00b1ff] rounded-2xl text-white font-semibold text-sm sm:text-base tracking-wide hover:opacity-90 transition-all shadow-[0px_4px_12px_rgba(0,0,0,0.4)] active:scale-[0.97]"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       <nav className="fixed bottom-0 left-0 z-12 w-full h-[85px] bg-[#0f1930de]">
-  <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
-    {/* Leaderboard Button */}
-    <button
-      onClick={() => navigate("/attendee/leaderboard")}
-      className="flex flex-col w-[71px] items-center h-auto p-0 transition-opacity hover:opacity-80"
-    >
-      <img
-        className="w-[41px] h-[41px]"
-        alt="Leaderboard"
-        src={leaderboard}
-      />
-      <span className="font-light text-[#b4c1d9] text-[11px] text-center">
-        Leaderboard
-      </span>
-    </button>
+        <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
+          {/* Leaderboard Button */}
+          <button
+            onClick={() => navigate("/attendee/leaderboard")}
+            className="flex flex-col w-[71px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+          >
+            <img
+              className="w-[41px] h-[41px]"
+              alt="Leaderboard"
+              src={leaderboard}
+            />
+          </button>
 
-    {/* Map Button */}
-    <button
-      onClick={() => navigate("/attendee/journey")}
-      className="flex flex-col w-[60px] items-center h-auto p-0 transition-opacity hover:opacity-80"
-    >
-      <img
-        className="w-full h-[47px]"
-        alt="Map"
-        src={map}
-      />
-      <span className="font-medium text-[#00e0ffc4] text-xs text-center">
-        Map
-      </span>
-    </button>
+          {/* Map Button */}
+          <button
+            onClick={() => navigate("/attendee/journey")}
+            className="flex flex-col w-[60px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+          >
+            <img className="w-full h-[47px]" alt="Map" src={map} />
+          </button>
 
-    {/* Profile Button (Active) */}
-    <button
-      onClick={() => navigate("/attendee/profile")}
-      className="flex flex-col w-[41px] items-center h-auto p-0"
-    >
-      <img
-        className="w-full"
-        alt="Profile"
-        src={profile1}
-      />
-      <span className="font-medium text-[#00e0ffc4] text-[11px] text-center">
-        Profile
-      </span>
-    </button>
-  </div>
-</nav>
-
+          {/* Profile Button (Active) */}
+          <button
+            onClick={() => navigate("/attendee/profile")}
+            className="flex flex-col w-[41px] items-center h-auto p-0"
+          >
+            <img className="w-full" alt="Profile" src={profile1} />
+          </button>
+        </div>
+      </nav>
     </main>
   );
 }

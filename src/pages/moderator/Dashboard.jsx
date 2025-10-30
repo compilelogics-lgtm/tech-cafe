@@ -17,10 +17,7 @@ export default function ModeratorDashboard() {
       try {
         setLoading(true);
 
-        const stationQuery = query(
-          collection(db, "stations"),
-          where("createdBy", "==", user.uid)
-        );
+        const stationQuery = collection(db, "stations");
         const stationSnap = await getDocs(stationQuery);
         const stationData = stationSnap.docs.map((d) => ({
           id: d.id,
@@ -49,93 +46,109 @@ export default function ModeratorDashboard() {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen text-white">
+      <div className="text-center p-10 text-lg text-white/70">
         Loading moderator dashboard...
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+    <>
       <ModeratorNavbar />
-
-      <div className="max-w-6xl mx-auto p-4 md:p-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center mt-6">
-          🧭 Moderator Dashboard
-        </h1>
-        <p className="text-center text-gray-300 mb-8 md:text-lg">
-          Overview of your stations, scans, and attendee participation
-        </p>
-
-        {/* Quick Stats */}
-        {/* <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-indigo-500 hover:bg-indigo-600 rounded-xl text-center py-6 transition shadow-lg">
-            <h3 className="text-lg font-semibold mb-2">Stations</h3>
-            <p className="text-3xl font-bold">{stations.length}</p>
-          </div>
-          <div className="bg-cyan-500 hover:bg-cyan-600 rounded-xl text-center py-6 transition shadow-lg">
-            <h3 className="text-lg font-semibold mb-2">Total Scans</h3>
-            <p className="text-3xl font-bold">{scans.length}</p>
-          </div>
-          <div className="bg-teal-500 hover:bg-teal-600 rounded-xl text-center py-6 transition shadow-lg">
-            <h3 className="text-lg font-semibold mb-2">Attendees</h3>
-            <p className="text-3xl font-bold">{attendeesCount}</p>
-          </div>
-        </div> */}
+      <main className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-gray-800 p-6 pt-20 flex flex-col gap-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-white text-3xl font-semibold mb-2">
+            Moderator Dashboard
+          </h1>
+          <p className="text-white/60 text-sm">
+            Overview of your stations, scans, and attendee participation
+          </p>
+        </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
-          <Link
-            to="/moderator/generate-qr"
-            className="bg-indigo-500 hover:bg-indigo-600 rounded-xl text-center py-6 transition border border-white/20 shadow-lg"
-          >
-            <h3 className="text-lg font-semibold mb-1">Generate QR Codes</h3>
-            <p className="text-gray-200 text-sm">Create new event station codes</p>
-          </Link>
+        <div className="bg-[#1E1E28] border border-[#224E61] rounded-xl p-6 flex flex-col gap-4">
+          <h2 className="text-white text-2xl font-medium mb-2">Quick Actions</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <Link
+              to="/moderator/generate-qr"
+              className="w-full bg-[#00E0FF] text-white rounded-lg py-3 text-center hover:bg-[#00C8E6] transition"
+            >
+              + Generate QR Codes
+            </Link>
 
-          <Link
-            to="/moderator/stations"
-            className="bg-cyan-500 hover:bg-cyan-600 rounded-xl text-center py-6 transition border border-white/20 shadow-lg"
-          >
-            <h3 className="text-lg font-semibold mb-1">Manage Stations</h3>
-            <p className="text-gray-200 text-sm">Edit, activate or deactivate</p>
-          </Link>
+            <Link
+              to="/moderator/stations"
+              className="w-full border border-[#00E0FF] text-white rounded-lg py-3 text-center hover:bg-[#00E0FF]/10 transition"
+            >
+              Manage Stations
+            </Link>
 
-          <Link
-            to="/moderator/attendee-management"
-            className="bg-teal-500 hover:bg-teal-600 rounded-xl text-center py-6 transition border border-white/20 shadow-lg"
-          >
-            <h3 className="text-lg font-semibold mb-1">Attendee Manager</h3>
-            <p className="text-gray-200 text-sm">Mark participation & view progress</p>
-          </Link>
+            <Link
+              to="/moderator/attendee-management"
+              className="w-full border border-[#00E0FF] text-white rounded-lg py-3 text-center hover:bg-[#00E0FF]/10 transition"
+            >
+              Attendee Manager
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { label: "Total Stations", value: stations.length },
+            { label: "Total Scans", value: scans.length },
+            { label: "Unique Attendees", value: attendeesCount },
+          ].map((metric, i) => (
+            <div
+              key={i}
+              className="bg-[#1E1E28] border border-[#224E61] rounded-xl p-6 flex flex-col justify-center items-center"
+            >
+              <span className="text-white/60 text-sm">{metric.label}</span>
+              <span className="text-white font-semibold text-xl mt-1">
+                {metric.value}
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* Stations Table */}
-        <div className="bg-white/10 rounded-xl border border-white/20 p-6 overflow-x-auto">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4">📍 Your Stations Overview</h2>
+        <div className="bg-[#1E1E28] border border-[#224E61] rounded-xl p-6">
+          <h2 className="text-white text-2xl font-medium mb-4">
+            📍 Your Stations Overview
+          </h2>
           {stations.length === 0 ? (
-            <p className="text-gray-400">No stations created yet.</p>
+            <p className="text-white/50">No stations created yet.</p>
           ) : (
-            <table className="min-w-full text-sm md:text-base border-collapse">
-              <thead className="bg-white/10 text-gray-300 uppercase text-xs md:text-sm">
-                <tr>
-                  <th className="px-4 py-2 text-left">Station Name</th>
-                  <th className="px-4 py-2 text-center">Points</th>
-                  <th className="px-4 py-2 text-center">Active</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stations.map((st) => (
-                  <tr key={st.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                    <td className="px-4 py-2">{st.name}</td>
-                    <td className="px-4 py-2 text-center">{st.points ?? 0}</td>
-                    <td className="px-4 py-2 text-center">{st.active ? "✅" : "❌"}</td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm md:text-base border-collapse">
+                <thead className="bg-[#0000001a] text-white/70 uppercase text-xs">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-medium">Station Name</th>
+                    <th className="px-4 py-2 text-center font-medium">Points</th>
+                    <th className="px-4 py-2 text-center font-medium">Active</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {stations.map((st) => (
+                    <tr
+                      key={st.id}
+                      className="border-b border-[#224E61]/30 hover:bg-[#00E0FF]/5 transition"
+                    >
+                      <td className="px-4 py-2 text-white/80">{st.name}</td>
+                      <td className="px-4 py-2 text-center text-white/80">
+                        {st.points ?? 0}
+                      </td>
+                      <td className="px-4 py-2 text-center text-white/80">
+                        {st.active ? "✅" : "❌"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

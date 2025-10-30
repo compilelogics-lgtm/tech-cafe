@@ -217,21 +217,12 @@ export default function Leaderboard() {
           <img
             className={`${
               item.label === "Profile"
-                ? "w-full h-[41px]"
-                : "w-[41px] h-[41px]"
+                ? "w-[55px] h-[55px]"
+                : "w-[55px] h-[55px]"
             }`}
             src={item.icon}
-            alt={item.label}
           />
-          <span
-            className={`text-[11px] text-center ${
-              isActive
-                ? "font-medium text-[#00e0ffc4]"
-                : "font-light text-[#b4c1d9]"
-            }`}
-          >
-            {item.label}
-          </span>
+         
         </button>
       );
     })}

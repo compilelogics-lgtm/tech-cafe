@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../utils/firebase";
 import { useNavigate } from "react-router-dom";
-import group from "./../../assets/group.png";
 import novartislogotransparent2 from "./../../assets/novartis-logo-transparent-2-1.png";
 import novartislogotransparent1 from "./../../assets/novartis-logo-transparent-2.png";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
-
+import group from "./../../assets/group.png";
 
 /* Utility for class merging (figma used cn()) */
 function cn(...classes) {
@@ -55,7 +54,7 @@ const handleLogin = async (e) => {
 };
   return (
     <main
-      className="bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] w-full min-w-[390px] min-h-[844px] flex flex-col items-center relative overflow-hidden"
+      className="bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-w-[390px] min-h-[844px] flex flex-col items-center relative overflow-hidden"
     >
       <img
         className="absolute w-full h-full top-0 left-0 object-cover"

@@ -208,7 +208,12 @@ export default function AdminReports() {
     return (
       <>
         <AdminNavbar />
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 pt-20">
+        <div style={{
+        background: `
+        linear-gradient(248.32deg, rgba(34, 78, 97, 0.24) 1.53%, rgba(27, 55, 82, 0.85) 48.49%, #0D1B3A 95.44%),
+        linear-gradient(115.02deg, rgba(34, 78, 97, 0.64) 20.88%, #0D1B3A 100%)
+      `,
+      }}>
           <div className="max-w-6xl mx-auto text-center py-20">
             <div className="text-lg">Loading reports...</div>
           </div>
@@ -216,137 +221,212 @@ export default function AdminReports() {
       </>
     );
 
-  return (
-    <>
-      <AdminNavbar />
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6 pt-20">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <header className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-              <p className="text-sm text-gray-300 mt-1">Attendance, engagement and points overview (live)</p>
-            </div>
-          </header>
+ return (
+  <>
+    <AdminNavbar />
+    <div
+      className="min-h-screen text-gray-100 pt-24 px-6 pb-10"
+      style={{
+        background: `
+          linear-gradient(248.32deg, rgba(34, 78, 97, 0.24) 1.53%, rgba(27, 55, 82, 0.85) 48.49%, #0D1B3A 95.44%),
+          linear-gradient(115.02deg, rgba(34, 78, 97, 0.64) 20.88%, #0D1B3A 100%)
+        `,
+      }}
+    >
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <header>
+          <h1 className="text-3xl font-bold mb-2">Reports & Analytics</h1>
+          <p className="text-gray-400">
+            Attendance, engagement and points overview (live)
+          </p>
+        </header>
 
-          {/* summary cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard title="Attendees" value={summary.attendees} />
-            <StatCard title="Moderators" value={summary.moderators} />
-            <StatCard title="Stations" value={summary.stations} />
-            <StatCard title="Participations" value={summary.participations} />
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard title="Attendees" value={summary.attendees} />
+          <StatCard title="Moderators" value={summary.moderators} />
+          <StatCard title="Stations" value={summary.stations} />
+          <StatCard title="Participations" value={summary.participations} />
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left side */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Attendance Growth */}
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold">Attendance Growth</h2>
+                <span className="text-sm text-gray-400">
+                  Unique attendees per day
+                </span>
+              </div>
+              <div style={{ width: "100%", height: 320 }}>
+                <ResponsiveContainer>
+                  <LineChart data={attendanceByDay}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="date" stroke="#9CA3AF" />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip
+  contentStyle={{
+    background: "rgba(30, 30, 40, 0.9)",
+    border: "1px solid rgba(34, 78, 97, 0.6)",
+    borderRadius: "8px",
+    color: "#fff",
+  }}
+  itemStyle={{ color: "#00E0FF" }}
+  labelStyle={{ color: "#9CA3AF" }}
+/>
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="attendees"
+                      stroke="#06b6d4"
+                      strokeWidth={3}
+                      dot={{ r: 3 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            {/* Department Insights */}
+            <div className="grid sm:grid-cols-3 gap-4">
+              <Card>
+                <h3 className="text-sm text-gray-300">Top Department</h3>
+                <div className="mt-2">
+                  <div className="text-lg font-semibold text-indigo-400">
+                    {deptInsights.topDepartment.name}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {deptInsights.topDepartment.totalPoints} total points
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <h3 className="text-sm text-gray-300">Highest Individual</h3>
+                <div className="mt-2">
+                  <div className="text-lg font-semibold text-cyan-400">
+                    {deptInsights.highestIndividual.name}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {deptInsights.highestIndividual.points} pts
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <h3 className="text-sm text-gray-300">Avg Check-ins / User</h3>
+                <div className="mt-2">
+                  <div className="text-lg font-semibold text-amber-400">
+                    {deptInsights.avgCheckins}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {deptInsights.totalParticipations} total participations
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
 
-          {/* main content grid */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Large: Attendance growth + department insights */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold">Attendance Growth</h2>
-                  <div className="text-sm text-gray-300">Unique attendees per day</div>
-                </div>
-
-                <div style={{ width: "100%", height: 320 }}>
-                  <ResponsiveContainer>
-                    <LineChart data={attendanceByDay}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#111827" />
-                      <XAxis dataKey="date" stroke="#9CA3AF" />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="attendees" stroke="#06b6d4" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
-
-              <div className="grid sm:grid-cols-3 gap-4">
-                <Card>
-                  <h3 className="text-sm text-gray-300">Top Department</h3>
-                  <div className="mt-2">
-                    <div className="text-lg font-semibold">{deptInsights.topDepartment.name}</div>
-                    <div className="text-sm text-gray-400">{deptInsights.topDepartment.totalPoints} total points</div>
-                  </div>
-                </Card>
-
-                <Card>
-                  <h3 className="text-sm text-gray-300">Highest Individual Points</h3>
-                  <div className="mt-2">
-                    <div className="text-lg font-semibold">{deptInsights.highestIndividual.name}</div>
-                    <div className="text-sm text-gray-400">{deptInsights.highestIndividual.points} pts</div>
-                  </div>
-                </Card>
-
-                <Card>
-                  <h3 className="text-sm text-gray-300">Avg Check-ins / User</h3>
-                  <div className="mt-2">
-                    <div className="text-lg font-semibold">{deptInsights.avgCheckins}</div>
-                    <div className="text-sm text-gray-400">{deptInsights.totalParticipations} total participations</div>
-                  </div>
-                </Card>
+          {/* Right side */}
+          <div className="space-y-6">
+            {/* Department Engagement */}
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold">Department Engagement</h2>
+                <span className="text-sm text-gray-400">By participations</span>
               </div>
-            </div>
+              <div style={{ width: "100%", height: 240 }}>
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      dataKey="value"
+                      data={deptEngagement}
+                      nameKey="name"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={4}
+                    >
+                      {deptEngagement.map((entry, idx) => (
+                        <Cell
+                          key={entry.name}
+                          fill={pieColors[idx % pieColors.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Legend
+                      verticalAlign="bottom"
+                      wrapperStyle={{ color: "#cbd5e1", fontSize: 12 }}
+                    />
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
 
-            {/* Right column: Pie + Bars */}
-            <div className="space-y-6">
-              <Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold">Department Engagement</h2>
-                  <div className="text-sm text-gray-300">By participations</div>
-                </div>
-
-                <div style={{ width: "100%", height: 240 }}>
-                  <ResponsiveContainer>
-                    <PieChart>
-                      <Pie dataKey="value" data={deptEngagement} nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={4}>
-                        {deptEngagement.map((entry, idx) => (
-                          <Cell key={entry.name} fill={pieColors[idx % pieColors.length]} />
-                        ))}
-                      </Pie>
-                      <Legend verticalAlign="bottom" wrapperStyle={{ color: "#cbd5e1", fontSize: 12 }} />
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold">Points per Event</h2>
-                  <div className="text-sm text-gray-300">Total points earned at each station</div>
-                </div>
-
-                <div style={{ width: "100%", height: 260 }}>
-                  <ResponsiveContainer>
-                    <BarChart data={pointsPerEvent}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#111827" />
-                      <XAxis dataKey="name" stroke="#9CA3AF" tick={{ fontSize: 12 }} />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip />
-                      <Bar dataKey="points" fill="#7c3aed" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </Card>
-            </div>
+            {/* Points per Event */}
+            <Card>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold">Points per Event</h2>
+                <span className="text-sm text-gray-400">
+                  Total points earned at each station
+                </span>
+              </div>
+              <div style={{ width: "100%", height: 260 }}>
+                <ResponsiveContainer>
+                  <BarChart data={pointsPerEvent}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#9CA3AF"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip />
+                    <Bar
+                      dataKey="points"
+                      fill="#7c3aed"
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
           </div>
         </div>
       </div>
-    </>
-  );
+    </div>
+  </>
+);
+
 }
 
 /* ---------------- Small UI components ---------------- */
 
 function Card({ children }) {
-  return <div className="bg-white/6 rounded-2xl p-4 shadow-lg backdrop-blur-md border border-white/6">{children}</div>;
+  return (
+    <div className="rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm"
+    style={{
+              background: "rgba(30, 30, 40, 1)",
+              border: "1px solid rgba(34, 78, 97, 1)",
+            }}>
+      {children}
+    </div>
+  );
 }
 
 function StatCard({ title, value }) {
   return (
-    <div className="bg-white/6 rounded-2xl p-4 shadow-lg backdrop-blur-md border border-white/6 text-center">
+    <div style={{
+              background: "rgba(30, 30, 40, 1)",
+              border: "1px solid rgba(34, 78, 97, 1)",
+            }} className="rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm text-center">
       <div className="text-sm text-gray-300">{title}</div>
-      <div className="text-3xl font-bold mt-2">{value}</div>
+      <div className="text-3xl font-bold mt-2 text-white">{value}</div>
     </div>
   );
 }

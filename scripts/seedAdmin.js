@@ -14,15 +14,15 @@ const isEmulator =
 if (isEmulator) {
   process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
   process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
-
   admin.initializeApp({ projectId: "tech-cafe-event-dev" });
   console.log("🔥 Using Firebase Emulators (127.0.0.1:8080 / 9099)");
 } else {
   const serviceAccountPath = path.join(__dirname, "../serviceAccountKey.json");
   if (!existsSync(serviceAccountPath)) {
-    console.error("❌ Missing serviceAccountKey.json.");
+    console.error("❌ Missing serviceAccountKey.json");
     process.exit(1);
   }
+
   const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8"));
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -34,51 +34,106 @@ if (isEmulator) {
 const auth = admin.auth();
 const db = admin.firestore();
 
+/**
+ * Utility: create user if doesn't exist (Auth + Firestore + Claims)
+ */
+const createUserIfNotExists = async ({
+  email,
+  password,
+  displayName,
+  role,
+  extra = {},
+}) => {
+  let user;
+  try {
+    user = await auth.getUserByEmail(email);
+    console.log(`⚠️ ${role} already exists (${email}), skipping creation.`);
+  } catch (e) {
+    if (e.code === "auth/user-not-found") {
+      user = await auth.createUser({
+        email,
+        password,
+        displayName,
+        emailVerified: true,
+      });
+      console.log(`✅ Created ${role}: ${email}`);
+    } else {
+      throw e;
+    }
+  }
+
+  // Assign role claim
+  await auth.setCustomUserClaims(user.uid, { role });
+
+  // Store Firestore user doc
+  await db.collection("users").doc(user.uid).set(
+    {
+      name: displayName,
+      email,
+      role,
+      verified: true, // all verified
+      ...extra,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  console.log(`✅ ${role} Firestore record synced.`);
+};
+
+/**
+ * Seed main roles and data
+ */
 const seed = async () => {
   try {
-    // -----------------------------
-    // 1️⃣ Admin Account
-    // -----------------------------
-    const email = "admin@gmail.com";
-    const password = "admin@gmail.com";
+    console.log("🚀 Starting seed...");
 
-    let user;
-    try {
-      user = await auth.getUserByEmail(email);
-      console.log("⚠️ Admin already exists, skipping creation.");
-    } catch (e) {
-      if (e.code === "auth/user-not-found") {
-        user = await auth.createUser({
-          email,
-          password,
-          displayName: "TechCafe Admin",
-          emailVerified: true,
-        });
-        console.log("✅ Admin user created.");
-      } else throw e;
-    }
+    // -----------------------------
+    // 1️⃣ Admin
+    // -----------------------------
+    await createUserIfNotExists({
+      email: "admin@gmail.com",
+      password: "admin@gmail.com",
+      displayName: "TechCafe Admin",
+      role: "admin",
+    });
 
-    await db.collection("users").doc(user.uid).set(
-      {
-        name: "TechCafe Admin",
-        email,
-        role: "admin",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    // -----------------------------
+    // 2️⃣ Moderator
+    // -----------------------------
+    await createUserIfNotExists({
+      email: "moderator@gmail.com",
+      password: "moderator@gmail.com",
+      displayName: "TechCafe Moderator",
+      role: "moderator",
+    });
+
+    // -----------------------------
+    // 3️⃣ Attendee
+    // -----------------------------
+    await createUserIfNotExists({
+      email: "attendee@gmail.com",
+      password: "attendee@gmail.com",
+      displayName: "TechCafe Attendee",
+      role: "attendee",
+      extra: {
+        department: "R&D",
+        phone: "+1234567890",
+        totalPoints: 0,
+        prizeClaimed: false,
+        stationsCompleted: [],
       },
-      { merge: true }
-    );
-
-    console.log("✅ Admin Firestore record seeded successfully.");
+    });
 
     // -----------------------------
-    // 2️⃣ Event Stations
+    // 4️⃣ Event Stations
     // -----------------------------
     const stations = [
       {
         id: "futuristic-welcome",
         name: "Futuristic Welcome",
         description:
-          "Escape the past. Shift your mindset. Control the future. Under the banner ESC + SHIFT + CTRL, discover how AI is transforming work, productivity, and the future of health-tech. Let’s switch ON the digital mode!",
+          "Escape the past. Shift your mindset. Control the future. Under the banner ESC + SHIFT + CTRL, discover how AI is transforming work, productivity, and the future of health-tech.",
         points: 10,
         active: true,
       },
@@ -102,7 +157,7 @@ const seed = async () => {
         id: "metaverse-xr-corner",
         name: "Metaverse / XR Corner",
         description:
-          "Step into the Metaverse! Explore immersive VR games and interactive health-tech experiences. Meet the Expert – Mr. Mahmoud Ashraf who will be joining us as our VR expert, ready to chat, answer your questions, and walk you through the exciting world of VR technology and its real-world uses.",
+          "Step into the Metaverse! Explore immersive VR games and interactive health-tech experiences.",
         points: 15,
         active: true,
       },
@@ -110,7 +165,7 @@ const seed = async () => {
         id: "tech-circles",
         name: "Tech Circles",
         description:
-          "Join interactive sessions led by experts! AI in Marketing (Creativity & Design) – Dr. Ayman Amin. AI in Productivity & Automation – Mr. Ahmed Mohsen. Learn real-world AI tools and prompts shaping the medical field.",
+          "Join interactive sessions led by experts on AI in Marketing and Productivity.",
         points: 10,
         active: true,
       },
@@ -118,14 +173,13 @@ const seed = async () => {
         id: "prizes-giveaways",
         name: "Prizes & Giveaways",
         description:
-          "Game on till the end! Collect your giveaways and see if you’ve made the Top 10 leaderboard for an extra-special gift.",
+          "Collect your giveaways and check if you’re in the Top 10 leaderboard!",
         points: 5,
         active: true,
       },
     ];
 
     console.log("🚀 Seeding event stations...");
-
     for (const station of stations) {
       const ref = db.collection("stations").doc(station.id);
       const snap = await ref.get();
@@ -140,7 +194,7 @@ const seed = async () => {
       }
     }
 
-    console.log("🎉 All stations seeded successfully!");
+    console.log("🎉 All users and stations seeded successfully!");
     process.exit(0);
   } catch (err) {
     console.error("❌ Error during seeding:", err);
@@ -155,4 +209,4 @@ seed();
 // this command can be used to run the seed
 
 
-// $env:FIREBASE_EMULATOR="true"; node scripts/seedAdmin.js   
+// $env:FIREBASE_EMULATOR="true"; node scripts/seedAdmin.js

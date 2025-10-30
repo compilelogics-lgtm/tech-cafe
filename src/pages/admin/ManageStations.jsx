@@ -411,7 +411,13 @@ export default function ManageStations() {
   return (
     <>
       <AdminNavbar />
-      <main className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-gray-800  p-6 pt-20">
+      <main className="min-h-screen w-full p-6 pt-20 flex flex-col gap-6"
+      style={{
+        background: `
+        linear-gradient(248.32deg, rgba(34, 78, 97, 0.24) 1.53%, rgba(27, 55, 82, 0.85) 48.49%, #0D1B3A 95.44%),
+        linear-gradient(115.02deg, rgba(34, 78, 97, 0.64) 20.88%, #0D1B3A 100%)
+      `,
+      }}>
         <div className="max-w-7xl mx-auto space-y-6">
 
           {/* Header / Title */}
@@ -451,7 +457,7 @@ export default function ManageStations() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-white text-2xl font-medium">Event Analytics — overview</h2>
                 <div className="flex items-center gap-2">
-                  <select className="bg-[#0D1B3A] border border-[#224E61] text-white px-2 py-1 rounded" defaultValue="7">
+                  <select className="bg-[#1E1E28] border border-[#224E61] text-white px-2 py-1 rounded" defaultValue="7">
                     <option value="7">Last 7 days</option>
                     <option value="30">Last 30 days</option>
                     <option value="90">Last 90 days</option>
@@ -460,7 +466,7 @@ export default function ManageStations() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#0D1B3A] rounded-lg p-3">
+                <div className="rounded-lg p-3">
                   <h3 className="text-white font-medium mb-2">Registrations Over Time</h3>
                   <div style={{ width: "100%", height: 220 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -475,7 +481,7 @@ export default function ManageStations() {
                   </div>
                 </div>
 
-                <div className="bg-[#0D1B3A] rounded-lg p-3">
+                <div className="rounded-lg p-3">
                   <h3 className="text-white font-medium mb-2">Points Redeemed</h3>
                   <div style={{ width: "100%", height: 220 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -600,22 +606,22 @@ export default function ManageStations() {
               <div>
                 <h2 className="text-white text-2xl font-medium mb-4">Key Metrics</h2>
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-[#0D1B3A] p-3 rounded">
+                  <div className="  p-3 rounded">
                     <div className="text-white/70 text-sm">Total Registrations</div>
                     <div className="text-white font-semibold">{totalRegistrations}</div>
                   </div>
 
-                  <div className="bg-[#0D1B3A] p-3 rounded">
+                  <div className="  p-3 rounded">
                     <div className="text-white/70 text-sm">Total Points Redeemed</div>
                     <div className="text-white font-semibold">{totalPointsRedeemed}</div>
                   </div>
 
-                  <div className="bg-[#0D1B3A] p-3 rounded">
+                  <div className="  p-3 rounded">
                     <div className="text-white/70 text-sm">Avg Session Time</div>
                     <div className="text-white font-semibold">—</div>
                   </div>
 
-                  <div className="bg-[#0D1B3A] p-3 rounded">
+                  <div className="  p-3 rounded">
                     <div className="text-white/70 text-sm">Active Users</div>
                     <div className="text-white font-semibold">{activeUsersCount}</div>
                   </div>
@@ -653,20 +659,20 @@ export default function ManageStations() {
               <h2 className="text-white text-xl font-medium mb-3">Add New Station</h2>
               <div className="space-y-3">
                 <input
-                  className="w-full p-2 bg-[#0D1B3A] border border-[#224E61] rounded text-white"
+                  className="w-full p-2 bg-[#1E1E28]  border border-[#224E61] rounded text-white"
                   placeholder="Station name"
                   value={newStation.name}
                   onChange={(e) => setNewStation({ ...newStation, name: e.target.value })}
                 />
                 <input
-                  className="w-full p-2 bg-[#0D1B3A] border border-[#224E61] rounded text-white"
+                  className="w-full p-2 bg-[#1E1E28]  border border-[#224E61] rounded text-white"
                   type="number"
                   placeholder="Points"
                   value={newStation.points}
                   onChange={(e) => setNewStation({ ...newStation, points: e.target.value })}
                 />
                 <select
-                  className="w-full p-2 bg-[#0D1B3A] border border-[#224E61] rounded text-white"
+                  className="w-full p-2 bg-[#1E1E28]  border border-[#224E61] rounded text-white"
                   value={newStation.eventId}
                   onChange={(e) => setNewStation({ ...newStation, eventId: e.target.value })}
                 >
@@ -676,7 +682,7 @@ export default function ManageStations() {
                   ))}
                 </select>
                 <textarea
-                  className="w-full p-2 bg-[#0D1B3A] border border-[#224E61] rounded text-white"
+                  className="w-full p-2 bg-[#1E1E28]  border border-[#224E61] rounded text-white"
                   placeholder="Description (optional)"
                   value={newStation.description}
                   onChange={(e) => setNewStation({ ...newStation, description: e.target.value })}

@@ -284,7 +284,16 @@ export default function AdminPointsRewards() {
   return (
     <>
       <AdminNavbar />
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-gray-100 p-6 pt-20">
+      <div
+  className="min-h-screen text-gray-100 pt-24 px-6 pb-10"
+  style={{
+    background: `
+      linear-gradient(248.32deg, rgba(34, 78, 97, 0.24) 1.53%, rgba(27, 55, 82, 0.85) 48.49%, #0D1B3A 95.44%),
+      linear-gradient(115.02deg, rgba(34, 78, 97, 0.64) 20.88%, #0D1B3A 100%)
+    `,
+  }}
+>
+
         <div className="max-w-7xl mx-auto space-y-6">
           <header className="flex items-center justify-between">
             <div>
@@ -306,166 +315,232 @@ export default function AdminPointsRewards() {
           {/* Main: left chart+notifications, right table */}
           <div className="grid lg:grid-cols-3 gap-6">
             {/* left: chart + notifications */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="bg-white/6 rounded-2xl p-5 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold">Awards over time</h2>
+{/* left: chart + notifications */}
+<div className="lg:col-span-2 space-y-4">
+  {/* Chart card */}
+  <div
+    className="rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm"
+    style={{
+      background: "rgba(30, 30, 40, 1)",
+      border: "1px solid rgba(34, 78, 97, 1)",
+    }}
+  >
+    <div className="flex items-center justify-between mb-3">
+      <h2 className="text-lg font-semibold text-white">Awards over time</h2>
 
-                  <div className="flex gap-2 items-center">
-                    <div className="text-sm text-gray-300 mr-2">Range:</div>
-                    <div className="flex gap-2">
-                      <SmallToggle active={range === "today"} onClick={() => setRange("today")}>Today</SmallToggle>
-                      <SmallToggle active={range === "week"} onClick={() => setRange("week")}>This Week</SmallToggle>
-                      <SmallToggle active={range === "month"} onClick={() => setRange("month")}>This Month</SmallToggle>
-                      <SmallToggle active={range === "all"} onClick={() => setRange("all")}>All Time</SmallToggle>
-                    </div>
-                    <div className="ml-4 text-sm text-gray-300 mr-2">Granularity:</div>
-                    <div className="flex gap-2">
-                      <SmallToggle active={granularity === "hour"} onClick={() => { setGranularity("hour"); setRange("today"); }}>Hour</SmallToggle>
-                      <SmallToggle active={granularity === "day"} onClick={() => setGranularity("day")}>Day</SmallToggle>
-                    </div>
-                  </div>
+      <div className="flex gap-2 items-center">
+        <div className="text-sm text-gray-300 mr-2">Range:</div>
+        <div className="flex gap-2">
+          <SmallToggle active={range === "today"} onClick={() => setRange("today")}>Today</SmallToggle>
+          <SmallToggle active={range === "week"} onClick={() => setRange("week")}>This Week</SmallToggle>
+          <SmallToggle active={range === "month"} onClick={() => setRange("month")}>This Month</SmallToggle>
+          <SmallToggle active={range === "all"} onClick={() => setRange("all")}>All Time</SmallToggle>
+        </div>
+        <div className="ml-4 text-sm text-gray-300 mr-2">Granularity:</div>
+        <div className="flex gap-2">
+          <SmallToggle active={granularity === "hour"} onClick={() => { setGranularity("hour"); setRange("today"); }}>Hour</SmallToggle>
+          <SmallToggle active={granularity === "day"} onClick={() => setGranularity("day")}>Day</SmallToggle>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ width: "100%", height: 320 }}>
+      <ResponsiveContainer>
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+          <XAxis stroke="#9CA3AF" />
+          <YAxis stroke="#9CA3AF" />
+          <Tooltip
+            contentStyle={{
+              background: "rgba(30, 30, 40, 0.9)",
+              border: "1px solid rgba(34, 78, 97, 0.6)",
+              borderRadius: "8px",
+              color: "#fff",
+            }}
+            itemStyle={{ color: "#00E0FF" }}
+            labelStyle={{ color: "#9CA3AF" }}
+          />
+          <Legend />
+          <Line type="monotone" dataKey="points" stroke="#06b6d4" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+
+    <div className="mt-3 text-sm text-gray-300">
+      X = time (by {granularity}), Y = total points awarded in that bucket.
+    </div>
+  </div>
+
+  {/* Notifications card */}
+  <div
+    className="rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm"
+    style={{
+      background: "rgba(30, 30, 40, 1)",
+      border: "1px solid rgba(34, 78, 97, 1)",
+    }}
+  >
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="text-lg font-semibold text-white">Recent Awards</h3>
+      <div className="text-sm text-gray-300">{recentNotifications.length} latest</div>
+    </div>
+
+    <ul className="space-y-2 max-h-64 overflow-auto">
+      {recentNotifications.length === 0 ? (
+        <li className="text-gray-400">No awards yet.</li>
+      ) : (
+        recentNotifications.map((n, i) => (
+          <li
+            key={i}
+            className="p-3 rounded-lg border border-white/10"
+            style={{
+              background: "rgba(40, 40, 55, 1)",
+            }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="text-sm text-gray-200">{n.text}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {n.time ? n.time.toLocaleString() : ""}
                 </div>
-
-                <div style={{ width: "100%", height: 320 }}>
-                  <ResponsiveContainer>
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                      <XAxis dataKey="time" stroke="#9CA3AF" />
-                      <YAxis stroke="#9CA3AF" />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="points" stroke="#06b6d4" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 6 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                <div className="mt-3 text-sm text-gray-300">
-                  X = time (by {granularity}), Y = total points awarded in that bucket.
-                </div>
-              </div>
-
-              {/* notifications */}
-              <div className="bg-white/6 rounded-2xl p-5 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold">Recent Awards</h3>
-                  <div className="text-sm text-gray-300">{recentNotifications.length} latest</div>
-                </div>
-
-                <ul className="space-y-2 max-h-64 overflow-auto">
-                  {recentNotifications.length === 0 ? (
-                    <li className="text-gray-400">No awards yet.</li>
-                  ) : (
-                    recentNotifications.map((n, i) => (
-                      <li key={i} className="bg-white/5 p-3 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="text-sm">{n.text}</div>
-                            <div className="text-xs text-gray-400 mt-1">{n.time ? n.time.toLocaleString() : ""}</div>
-                          </div>
-                        </div>
-                      </li>
-                    ))
-                  )}
-                </ul>
               </div>
             </div>
+          </li>
+        ))
+      )}
+    </ul>
+  </div>
+</div>
+
 
             {/* right: stations table */}
-            <div className="space-y-4">
-              <div className="bg-white/6 rounded-2xl p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold">Stations</h3>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Search station..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="px-3 py-2 rounded bg-white/5 placeholder:text-gray-400 text-sm"
-                    />
-                  </div>
-                </div>
+         <div className="space-y-4">
+  {/* Stations card */}
+  <div
+    className="rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm"
+    style={{
+      background: "rgba(30, 30, 40, 1)",
+      border: "1px solid rgba(34, 78, 97, 1)",
+    }}
+  >
+    <div className="flex items-center justify-between mb-3">
+      <h3 className="text-lg font-semibold text-white">Stations</h3>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="Search station..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="px-3 py-2 rounded bg-[rgba(40,40,55,1)] placeholder:text-gray-400 text-sm text-gray-200 focus:outline-none border border-white/10"
+        />
+      </div>
+    </div>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="text-gray-300">
-                      <tr>
-                        <th className="py-2 px-3">Station</th>
-                        <th className="py-2 px-3 text-center">Points</th>
-                        <th className="py-2 px-3 text-center">Participations</th>
-                        <th className="py-2 px-3 text-center">Active</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pageStations.map((s) => {
-                        const summary = stationSummary.find((ss) => ss.id === s.id) || {};
-                        return (
-                          <tr key={s.id} className="border-t border-white/6">
-                            <td className="py-3 px-3">
-                              <div className="font-semibold">{s.name}</div>
-                              {/* <div className="text-xs text-gray-400">{s.description || s.id}</div> */}
-                            </td>
-                            <td className="py-3 px-3 text-center">{s.points}</td>
-                            <td className="py-3 px-3 text-center">{summary.participations ?? 0}</td>
-                            <td className="py-3 px-3 text-center">
-                              <span className={`px-2 py-1 rounded text-xs ${s.active ? "bg-green-600" : "bg-gray-600"}`}>
-                                {s.active ? "Active" : "Inactive"}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                      {pageStations.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="py-6 text-center text-gray-400">
-                            No stations found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+    <div className="overflow-x-auto rounded-lg border border-white/5">
+      <table className="min-w-full text-left text-sm text-gray-300">
+        <thead>
+          <tr className="bg-[rgba(40,40,55,1)] text-gray-300">
+            <th className="py-2 px-3 font-medium">Station</th>
+            <th className="py-2 px-3 text-center font-medium">Points</th>
+            <th className="py-2 px-3 text-center font-medium">Participations</th>
+            <th className="py-2 px-3 text-center font-medium">Active</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pageStations.map((s) => {
+            const summary = stationSummary.find((ss) => ss.id === s.id) || {};
+            return (
+              <tr
+                key={s.id}
+                className="border-t border-white/10 hover:bg-[rgba(40,40,55,0.8)] transition-colors"
+              >
+                <td className="py-3 px-3">
+                  <div className="font-semibold text-white">{s.name}</div>
+                </td>
+                <td className="py-3 px-3 text-center text-gray-200">
+                  {s.points}
+                </td>
+                <td className="py-3 px-3 text-center text-gray-200">
+                  {summary.participations ?? 0}
+                </td>
+                <td className="py-3 px-3 text-center">
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      s.active
+                        ? "bg-green-600/30 text-green-400 border border-green-600/40"
+                        : "bg-gray-600/30 text-gray-400 border border-gray-600/40"
+                    }`}
+                  >
+                    {s.active ? "Active" : "Inactive"}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+          {pageStations.length === 0 && (
+            <tr>
+              <td colSpan={4} className="py-6 text-center text-gray-400">
+                No stations found.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
 
-                {/* Pagination */}
-                <div className="mt-3 flex items-center justify-between text-sm text-gray-300">
-                  <div>
-                    Page {page} / {totalPages}
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={goPrev} className="px-3 py-1 rounded bg-white/5 disabled:opacity-50" disabled={page <= 1}>
-                      Prev
-                    </button>
-                    <button onClick={goNext} className="px-3 py-1 rounded bg-white/5 disabled:opacity-50" disabled={page >= totalPages}>
-                      Next
-                    </button>
-                  </div>
-                </div>
-              </div>
+    {/* Pagination */}
+    <div className="mt-3 flex items-center justify-between text-sm text-gray-300">
+      <div>
+        Page {page} / {totalPages}
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={goPrev}
+          className="px-3 py-1 rounded bg-[rgba(40,40,55,1)] border border-white/10 text-gray-200 hover:bg-[rgba(50,50,65,1)] transition disabled:opacity-50"
+          disabled={page <= 1}
+        >
+          Prev
+        </button>
+        <button
+          onClick={goNext}
+          className="px-3 py-1 rounded bg-[rgba(40,40,55,1)] border border-white/10 text-gray-200 hover:bg-[rgba(50,50,65,1)] transition disabled:opacity-50"
+          disabled={page >= totalPages}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
 
-              {/* quick summary card */}
-              <div className="bg-white/6 rounded-2xl p-4 shadow-lg">
-                <h4 className="font-semibold">Quick Summary</h4>
-                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-white/5 p-3 rounded">
-                    <div className="text-xs text-gray-300">Stations</div>
-                    <div className="text-lg font-semibold">{stations.length}</div>
-                  </div>
-                  <div className="bg-white/5 p-3 rounded">
-                    <div className="text-xs text-gray-300">Total Scans</div>
-                    <div className="text-lg font-semibold">{scans.length}</div>
-                  </div>
-                  <div className="bg-white/5 p-3 rounded">
-                    <div className="text-xs text-gray-300">Users</div>
-                    <div className="text-lg font-semibold">{users.length}</div>
-                  </div>
-                  <div className="bg-white/5 p-3 rounded">
-                    <div className="text-xs text-gray-300">Awarded Points</div>
-                    <div className="text-lg font-semibold">{totalPointsAwarded}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+  {/* Quick Summary card */}
+  <div
+    className="rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm"
+    style={{
+      background: "rgba(30, 30, 40, 1)",
+      border: "1px solid rgba(34, 78, 97, 1)",
+    }}
+  >
+    <h4 className="font-semibold text-white mb-3">Quick Summary</h4>
+    <div className="grid grid-cols-2 gap-3 text-sm">
+      {[
+        { label: "Stations", value: stations.length },
+        { label: "Total Scans", value: scans.length },
+        { label: "Users", value: users.length },
+        { label: "Awarded Points", value: totalPointsAwarded },
+      ].map((item, i) => (
+        <div
+          key={i}
+          className="rounded-lg p-3 border border-white/10 bg-[rgba(40,40,55,1)]"
+        >
+          <div className="text-xs text-gray-300">{item.label}</div>
+          <div className="text-lg font-semibold text-white mt-1">
+            {item.value}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
           </div>
         </div>
       </div> 
@@ -475,14 +550,26 @@ export default function AdminPointsRewards() {
 
 /* ---------- Small UI subcomponents ---------- */
 
-function Card({ title, value, warning }) {
+function Card({ title, value, warning, children }) {
   return (
-    <div className={`rounded-2xl p-4 shadow-lg ${warning ? "ring-2 ring-red-500/30" : ""}`} style={{ background: "rgba(255,255,255,0.03)" }}>
-      <div className="text-sm text-gray-300">{title}</div>
-      <div className="text-2xl font-bold mt-2">{value}</div>
+    <div
+      className={`rounded-2xl p-5 shadow-md border border-white/10 backdrop-blur-sm ${
+        warning ? "ring-2 ring-red-500/40" : ""
+      }`}
+      style={{
+        background: "rgba(30, 30, 40, 1)",
+        border: "1px solid rgba(34, 78, 97, 1)",
+      }}
+    >
+      {title && <div className="text-sm text-gray-300">{title}</div>}
+      {value !== undefined && (
+        <div className="text-3xl font-bold mt-2 text-white">{value}</div>
+      )}
+      {children}
     </div>
   );
 }
+
 
 function SmallToggle({ children, active, onClick }) {
   return (
