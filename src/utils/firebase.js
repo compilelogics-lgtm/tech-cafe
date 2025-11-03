@@ -8,7 +8,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCRokPMew3jp1TKDZvOg9_iyUCGQISFMO4",
   authDomain: "tech-cafe-event-dev.firebaseapp.com",
   projectId: "tech-cafe-event-dev",
-  storageBucket: "tech-cafe-event-dev.appspot.com",
+  storageBucket: "tech-cafe-event-dev.firebasestorage.com",
   messagingSenderId: "150523353619",
   appId: "1:150523353619:web:d7004a01bebcf86e087de6"
 };
