@@ -11,6 +11,7 @@ import {
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import ScanQR from "./ScanQR";
+import bg from "../../assets/image.png";
 
 export default function Journey() {
   const { user } = useAuth();
@@ -53,28 +54,44 @@ export default function Journey() {
     fetchData();
   }, [user]);
 
-  const handleParticipate = async (station) => {
-    try {
-      await addDoc(collection(db, "participations"), {
-        userId: user.uid,
-        email: user.email,
-        name: user.displayName || user.email,
-        stationId: station.id,
-        markedAt: serverTimestamp(),
-      });
+const handleParticipate = async (station) => {
+  try {
+    // Firestore participation record
+    await addDoc(collection(db, "participations"), {
+      userId: user.uid,
+      email: user.email,
+      name: user.displayName || user.email,
+      stationId: station.id,
+      markedAt: serverTimestamp(),
+      autoRewarded: station.points === 0, // flag for 0-point stations
+    });
 
-      setParticipations((prev) => [
-        ...prev,
-        { userId: user.uid, stationId: station.id },
-      ]);
-      setPopup(`🎉 You've registered for ${station.name}!`);
-      setTimeout(() => setPopup(""), 3000);
-      setSelected(null);
+    // Update UI state
+    setParticipations((prev) => [
+      ...prev,
+      { userId: user.uid, stationId: station.id, autoRewarded: station.points === 0 },
+    ]);
+
+    // Popup feedback
+    setPopup(
+      station.points === 0
+        ? `✅ ${station.name} marked as completed!`
+        : `🎉 You've registered for ${station.name}!`
+    );
+    setTimeout(() => setPopup(""), 3000);
+
+    // Close modal
+    setSelected(null);
+
+    // Only open QR if not zero-point
+    if (station.points > 0) {
       setSelectedForScan(station);
-    } catch (err) {
-      console.error("Error marking participation:", err);
     }
-  };
+  } catch (err) {
+    console.error("Error marking participation:", err);
+  }
+};
+
 
   const isParticipated = (stationId) =>
     participations.some((p) => p.stationId === stationId);
@@ -184,12 +201,13 @@ export default function Journey() {
   if (loading) return <div className="p-10 text-center text-white">Loading journey...</div>;
 
   return (
-    <main className="overflow-hidden bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] w-full min-w-[390px] min-h-[844px] relative">
-      <img
-        className="absolute w-full h-full top-0 left-0"
-        alt="Group"
-        src="https://c.animaapp.com/mh3vxzzxbLNePl/img/group.png"
-      />
+   <main className="relative min-h-screen w-full bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat">
+  <img
+    src={bg}
+    alt="Group"
+    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+  />
+
 
       <header className="absolute top-[119px] left-[calc(50%_-_170px)]">
         <h1 className="[font-family:'Poppins',Helvetica] font-semibold text-white text-[22px] tracking-[0] leading-[normal] translate-y-[-1rem] animate-fade-in opacity-0">
@@ -330,24 +348,28 @@ export default function Journey() {
               Points: {selected.points || 0}
             </p>
 
-            {!isParticipated(selected.id) ? (
-              <button
-                onClick={() => handleParticipate(selected)}
-                className="w-full bg-[#e24d22] hover:bg-[#c43d1a] text-white [font-family:'Poppins',Helvetica] font-medium text-sm px-6 py-2 rounded-full transition-colors"
-              >
-                Mark as Participated
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setSelected(null);
-                  setSelectedForScan(selected);
-                }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white [font-family:'Poppins',Helvetica] font-medium text-sm px-6 py-2 rounded-full transition-colors"
-              >
-                Scan QR
-              </button>
-            )}
+         {!isParticipated(selected.id) ? (
+  <button
+    onClick={() => handleParticipate(selected)}
+    className="w-full bg-[#e24d22] hover:bg-[#c43d1a] text-white [font-family:'Poppins',Helvetica] font-medium text-sm px-6 py-2 rounded-full transition-colors"
+  >
+    {selected.points === 0 ? "Mark as Participated" : "Mark as Participated"}
+  </button>
+) : selected.points === 0 ? (
+  <div className="w-full bg-green-600 text-white text-center py-2 rounded-full [font-family:'Poppins',Helvetica] font-medium text-sm">
+    Completed ✅
+  </div>
+) : (
+  <button
+    onClick={() => {
+      setSelected(null);
+      setSelectedForScan(selected);
+    }}
+    className="w-full bg-blue-600 hover:bg-blue-700 text-white [font-family:'Poppins',Helvetica] font-medium text-sm px-6 py-2 rounded-full transition-colors"
+  >
+    Scan QR
+  </button>
+)}
 
             <button
               onClick={() => setSelected(null)}

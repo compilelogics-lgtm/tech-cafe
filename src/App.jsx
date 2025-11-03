@@ -2,7 +2,7 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { useAuth } from "./contexts/AuthContext";
 import { useEffect, useState } from "react";
-import useAutoLogout from "../scripts/hooks/useAutoLogout";
+import useSessionTimer from "../scripts/hooks/useSessionTimer";
 
 // Auth pages
 import Login from "./pages/auth/Login";
@@ -114,7 +114,8 @@ const Home = () => {
 // APP ROUTES
 // ----------------------------------------------------------------------
 export default function App() {
-  // useAutoLogout(360 * 1000);
+  
+   useSessionTimer(60 * 60 * 1000);
   return (
     <Routes>
       {/* Public routes */}

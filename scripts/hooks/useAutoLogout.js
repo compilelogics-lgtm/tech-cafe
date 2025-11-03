@@ -1,38 +1,34 @@
-import { useEffect, useRef } from "react";
-import { useAuth } from "../../src/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+// scripts/hooks/useAutoLogout.js
+import { useEffect } from "react";
+import { useAuth } from "../../app/contexts/AuthContext";
 
-export default function useAutoLogout(timeout = 60 * 1000) { // 1 minute
-  const { logout, user } = useAuth();
-  const timerRef = useRef(null);
-  const navigate = useNavigate();
-
-  const resetTimer = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-
-    timerRef.current = setTimeout(async () => {
-      if (user) {
-        console.log("⏰ Auto logout triggered after inactivity");
-        await logout();
-        navigate("/login", { replace: true }); // ✅ redirect to login after logout
-      }
-    }, timeout);
-  };
+export default function useAutoLogout(timeout = 30 * 60 * 1000) {
+  const { logout } = useAuth();
 
   useEffect(() => {
-    if (!user) return; // only track logged-in users
+    let timer;
 
-    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        logout();
+      }, timeout);
+    };
 
-    events.forEach((event) => window.addEventListener(event, resetTimer));
+    // user activity listeners
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keypress", resetTimer);
+    window.addEventListener("click", resetTimer);
+    window.addEventListener("scroll", resetTimer);
 
-    resetTimer(); // start timer immediately on mount
+    resetTimer(); // start timer on load
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      events.forEach((event) =>
-        window.removeEventListener(event, resetTimer)
-      );
+      clearTimeout(timer);
+      window.removeEventListener("mousemove", resetTimer);
+      window.removeEventListener("keypress", resetTimer);
+      window.removeEventListener("click", resetTimer);
+      window.removeEventListener("scroll", resetTimer);
     };
-  }, [user, timeout]);
+  }, [logout, timeout]);
 }

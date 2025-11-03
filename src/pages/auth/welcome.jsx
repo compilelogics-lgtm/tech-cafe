@@ -1,9 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../components/ui/Button";
-import powerButton from "./../../assets/-button.svg";
 import novartislogotransparent from "./../../assets/novartis-logo-transparent-1.png";
 import group from "./../../assets/group.png";
+import { Power } from "lucide-react";
 
 const decorativeDots = [
   {
@@ -76,7 +75,7 @@ const Welcome = () => {
         />
       ))}
 
-      {/* Main content wrapper */}
+      {/* Main content */}
       <section className="relative flex flex-col items-center text-center px-4 sm:px-8 mt-24 sm:mt-32 md:mt-40">
         <h2 className="text-[#b4c1d9] text-lg sm:text-xl md:text-2xl font-medium tracking-wide mb-3">
           WELCOME TO
@@ -110,21 +109,33 @@ const Welcome = () => {
         </div>
       </section>
 
-      {/* Start Button */}
-      <div className="relative flex flex-col items-center gap-3 sm:gap-4 mt-10 sm:mt-16 md:mt-20">
-        <Button
-          variant="default"
-          size="icon"
+      {/* Start Button (Figma Styled) */}
+      <div className="relative flex flex-col items-center gap-3 sm:gap-4 mt-12 sm:mt-20 md:mt-24">
+        <button
           onClick={() => navigate("/login")}
-          className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] md:w-[180px] md:h-[180px] rounded-full bg-primary hover:bg-primary/90 transition-colors border-0 flex items-center justify-center"
           aria-label="Start application"
+          className="
+            flex items-center justify-center
+            w-[72px] h-[72px]
+            sm:w-[90px] sm:h-[90px]
+            md:w-[110px] md:h-[110px]
+            bg-[#FF7A00]
+            rounded-full
+            shadow-[0_4px_40px_rgba(255,122,0,0.3)]
+            transition-transform duration-200
+            hover:scale-105 active:scale-95
+          "
         >
-          <img
-            src={powerButton}
-            alt="Power button"
-            className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px]"
+          <Power
+            className="
+              text-white
+              w-[28px] h-[28px]
+              sm:w-[36px] sm:h-[36px]
+              md:w-[44px] md:h-[44px]
+            "
+            strokeWidth={2.5}
           />
-        </Button>
+        </button>
 
         <span className="text-white text-sm sm:text-base md:text-lg font-medium tracking-wide">
           Tap to Start

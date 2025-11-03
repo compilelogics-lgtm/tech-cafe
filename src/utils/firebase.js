@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: "tech-cafe-event-dev",
   storageBucket: "tech-cafe-event-dev.firebasestorage.app",
   messagingSenderId: "150523353619",
-  appId: "1:150523353619:web:d7004a01bebcf86e087de6",
+  appId: "1:150523353619:web:d7004a01bebcf86e087de6"
 };
 // VITE_FIREBASE_API_KEY=AIzaSyCRokPMew3jp1TKDZvOg9_iyUCGQISFMO4
 // VITE_FIREBASE_AUTH_DOMAIN=tech-cafe-event-dev.firebaseapp.com

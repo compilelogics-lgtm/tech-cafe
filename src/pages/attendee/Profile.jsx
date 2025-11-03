@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import profile1 from "../../assets/profile.png";
 import leaderboard from "../../assets/leaderboard-2.png";
 import map from "../../assets/journey-2.png";
+import bg from "../../assets/image.png";
 
 // ---------------------- Embedded UI Components ----------------------
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -68,7 +69,6 @@ export default function Profile() {
 
   const handleLogout = () => {
     logout();
-    // setMobileOpen(false);
     navigate("/welcome", { replace: true });
   };
 
@@ -121,33 +121,42 @@ export default function Profile() {
     totalStations > 0 ? (completedStations / totalStations) * 100 : 0;
 
   return (
-    <main className="overflow-hidden bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen relative flex justify-center items-start">
+    <main className="overflow-hidden bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat w-full min-h-screen relative flex justify-center items-start">
       {/* Background Image */}
       <img
         className="absolute w-[98.08%] h-full top-0 left-0 object-cover"
         alt="Background grid pattern"
-        src="https://c.animaapp.com/mh3hl0ofl3qLzT/img/group.png"
+        src={bg}
       />
 
       <div className="relative z-10 w-full max-w-[390px] pt-[119px] pb-[100px] px-7">
-        <h1 className="text-center font-semibold text-[22px] [font-family:'Poppins',Helvetica] text-white tracking-[0] leading-[normal] mb-[50px] opacity-0 translate-y-[-1rem] animate-fade-in">
+        <h1 className="text-center font-semibold text-[22px] [font-family:'Poppins',Helvetica] text-white tracking-[0] leading-[normal] mb-[20px] opacity-0 translate-y-[-1rem] animate-fade-in">
           MY PROFILE
         </h1>
 
+        {/* Profile Photo (Centered Below Title, Above Card) */}
+        <div className="w-full flex justify-center mb-[40px] opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:150ms]">
+          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#00b1ff] shadow-lg bg-[#0f1930]">
+            <img
+              src={profile?.photoURL || profile1}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
         {/* Profile Info Card */}
-        <Card className="w-full h-[120px] bg-[#0f1930] rounded-2xl overflow-hidden border-none shadow-[0px_4px_12px_#00000040] relative mb-4 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:200ms] before:content-[''] before:absolute before:inset-0 before:p-0.5 before:rounded-2xl before:[background:linear-gradient(90deg,rgba(126,75,254,0.42)_7%,rgba(0,108,255,0.42)_47%,rgba(0,177,255,0.42)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
+        <Card className="w-full h-[120px] bg-[#0f1930] rounded-2xl overflow-hidden border-none shadow-[0px_4px_12px_#00000040] relative mb-4 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:250ms] before:content-[''] before:absolute before:inset-0 before:p-0.5 before:rounded-2xl before:[background:linear-gradient(90deg,rgba(126,75,254,0.42)_7%,rgba(0,108,255,0.42)_47%,rgba(0,177,255,0.42)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
           <CardContent className="p-5 h-full flex items-center justify-between">
             <div className="flex flex-col gap-2">
               <h2 className="[font-family:'Poppins',Helvetica] font-bold text-white text-base">
                 {profile?.name || "Unnamed User"}
               </h2>
-              {/* <p className="[font-family:'Poppins',Helvetica] font-medium text-[#b4c1d9] text-xs">
-                #{profile?.userId || user.uid}
-              </p> */}
               <p className="[font-family:'Poppins',Helvetica] font-bold text-[#8abde6] text-sm">
                 Total: {profile?.totalPoints ?? 0} pts
               </p>
             </div>
+
             <div className="flex flex-col items-center gap-1.5">
               <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center overflow-hidden">
                 <img
@@ -210,6 +219,7 @@ export default function Profile() {
             );
           })}
         </section>
+
         {/* Logout Button */}
         <div className="w-full flex justify-center mt-6 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:700ms]">
           <button
@@ -221,7 +231,7 @@ export default function Profile() {
         </div>
       </div>
 
-      <nav className="fixed bottom-0 left-0 z-12 w-full h-[85px] bg-[#0f1930de]">
+      <nav className="fixed bottom-0 left-0 z-100 w-full h-[85px] bg-[#0f1930de]">
         <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
           {/* Leaderboard Button */}
           <button

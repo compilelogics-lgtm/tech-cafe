@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import profile1 from "../../assets/profile-2.png";
 import leaderboard from "../../assets/leaderboard.png";
 import map from "../../assets/journey-2.png";
+import bg from "../../assets/image.png";
 
 
 const navItems = [
@@ -119,11 +120,12 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen w-full relative bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] text-white">
       {/* Background */}
-      <img
-        className="absolute w-full h-full top-0 left-0 object-cover"
-        src="https://c.animaapp.com/mh3pk1prsdWs6B/img/group.png"
-        alt="background"
-      />
+     {/* <main className="relative min-h-screen w-full overflow-hidden bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat"> */}
+       <img
+         src={bg}
+         alt="Group"
+         className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+       />
 
       <div className="relative z-10 flex flex-col items-center pt-28 px-6 pb-36">
         <h1 className="text-2xl font-bold text-center mb-1">LEADERBOARD</h1>
