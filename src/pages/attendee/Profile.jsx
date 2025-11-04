@@ -66,6 +66,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const { logout } = useAuth();
   const navigate = useNavigate();
+const [showQR, setShowQR] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -157,18 +158,22 @@ export default function Profile() {
               </p>
             </div>
 
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center overflow-hidden">
-                <img
-                  className="w-24 h-24 object-contain"
-                  alt="QR Code"
-                  src={
-                    profile?.qrCodeURL ||
-                    "https://c.animaapp.com/mh3hl0ofl3qLzT/img/la-qrcode.svg"
-                  }
-                />
-              </div>
-            </div>
+           <div className="flex flex-col items-center gap-1.5">
+  <div
+    className="w-24 h-24 bg-white rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+    onClick={() => setShowQR(true)}
+  >
+    <img
+      className="w-24 h-24 object-contain"
+      alt="QR Code"
+      src={
+        profile?.qrCodeURL ||
+        "https://c.animaapp.com/mh3hl0ofl3qLzT/img/la-qrcode.svg"
+      }
+    />
+  </div>
+</div>
+
           </CardContent>
         </Card>
 
@@ -262,6 +267,33 @@ export default function Profile() {
           </button>
         </div>
       </nav>
+      {showQR && (
+  <div
+    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+    onClick={() => setShowQR(false)}
+  >
+    <div
+      className="bg-white p-6 rounded-2xl shadow-xl relative"
+      onClick={(e) => e.stopPropagation()} // Prevent close when clicking inside
+    >
+      <img
+        src={
+          profile?.qrCodeURL ||
+          "https://c.animaapp.com/mh3hl0ofl3qLzT/img/la-qrcode.svg"
+        }
+        alt="QR Code Large"
+        className="w-72 h-72 object-contain"
+      />
+      <button
+        className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+        onClick={() => setShowQR(false)}
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+)}
+
     </main>
   );
 }
