@@ -76,7 +76,8 @@ export default function Login() {
   };
 
   return (
-    <main className="bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-w-[390px] min-h-[844px] flex flex-col items-center relative overflow-hidden">
+   <main className="bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen flex flex-col items-center relative overflow-hidden">
+
       <img
         className="absolute w-full h-full top-0 left-0 object-cover"
         alt="Background pattern"

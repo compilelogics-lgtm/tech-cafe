@@ -12,163 +12,142 @@ import {
 } from "firebase/firestore";
 import { Html5Qrcode } from "html5-qrcode";
 import { useAuth } from "../../contexts/AuthContext";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
-const ScanQR = ({ stationId }) => {
+const ScanQR = ({ stationId, onSuccess }) => {
   const { user } = useAuth();
-  const [scanning, setScanning] = useState(false);
-  const [uploadMode, setUploadMode] = useState(false);
-  const fileInputRef = useRef();
+  const [processing, setProcessing] = useState(false);
+  const [showPoints, setShowPoints] = useState(null);
   const html5QrCodeRef = useRef(null);
-
-  if (!stationId) {
-    console.error("ScanQR: Missing stationId prop");
-    return (
-      <div className="text-red-600 text-sm mt-2 text-center">
-        ⚠️ Missing station reference. Please reopen this station.
-      </div>
-    );
-  }
+  const scannedOnce = useRef(false); // <-- NEW: prevents multiple awards
 
   const stopScanner = async () => {
-    const scanner = html5QrCodeRef.current;
-    if (scanner && scanner.isScanning) {
+    if (html5QrCodeRef.current) {
       try {
-        await scanner.stop();
-      } catch (err) {
-        if (!String(err).includes("not running")) console.warn(err);
-      }
+        await html5QrCodeRef.current.stop();
+      } catch {}
+      html5QrCodeRef.current = null;
     }
-    html5QrCodeRef.current = null;
-    setScanning(false);
   };
 
   const startScanner = () => {
     stopScanner();
+    scannedOnce.current = false; // reset on start
     const scanner = new Html5Qrcode("qr-reader");
     html5QrCodeRef.current = scanner;
-    setScanning(true);
 
     scanner
       .start(
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         async (decodedText) => {
-          await stopScanner();
-          await handleScan(decodedText);
-        },
-        () => {}
+          if (scannedOnce.current) return; // skip if already scanned
+          scannedOnce.current = true;
+
+          setProcessing(true);
+          await stopScanner(); // stop camera before handling scan
+          const success = await handleScan(decodedText);
+          setProcessing(false);
+
+          if (success) {
+            setShowPoints(success.points || 0);
+            setTimeout(() => {
+              setShowPoints(null);
+              if (onSuccess) onSuccess(); // close modal
+            }, 1500);
+          }
+        }
       )
-      .catch(() => {
-        toast.error("Camera access denied or unavailable.");
-        setScanning(false);
-      });
+      .catch(() => toast.error("Camera unavailable or denied."));
   };
 
   useEffect(() => {
-    if (!uploadMode) startScanner();
-    else stopScanner();
+    startScanner();
     return () => stopScanner();
-  }, [uploadMode]);
+  }, []);
 
   const handleScan = async (qrData) => {
     try {
-      if (!user?.uid) return toast.error("You must be logged in.");
-      if (!qrData.includes("station=")) return toast.error("Invalid QR code format.");
+      if (!user?.uid) return toast.error("Login required.");
+      if (!qrData.includes("station=")) return toast.error("Invalid QR format.");
 
       const scannedStationId = new URL(qrData).searchParams.get("station");
-      if (scannedStationId !== stationId) return toast.error("Wrong QR code. Scan the correct station.");
+      if (scannedStationId !== stationId) return toast.error("Wrong station QR.");
 
       const stationRef = doc(db, "stations", stationId);
       const stationSnap = await getDoc(stationRef);
-      if (!stationSnap.exists()) return toast.error("Station not found.");
+      if (!stationSnap.exists()) return toast.error("Station missing.");
       const stationData = stationSnap.data();
 
-      const scanQuery = query(
+      // Already scanned?
+      const scanQ = query(
         collection(db, "scans"),
         where("userId", "==", user.uid),
         where("stationId", "==", stationId)
       );
-      const scanSnap = await getDocs(scanQuery);
-      if (!scanSnap.empty) return toast.error("Already scanned this station.");
+      const scanCheck = await getDocs(scanQ);
+      if (!scanCheck.empty) return toast.error("Already scanned.");
 
       const userRef = doc(db, "users", user.uid);
       const scanRef = doc(collection(db, "scans"));
 
       await runTransaction(db, async (transaction) => {
         const userDoc = await transaction.get(userRef);
-        if (!userDoc.exists()) throw new Error("User not found");
+        if (!userDoc.exists()) throw new Error("User missing.");
 
-        const currentPoints = userDoc.data().totalPoints || 0;
-        const stationPoints = stationData.points || 0;
-        const newPoints = currentPoints + stationPoints;
+        const newPoints =
+          (userDoc.data().totalPoints || 0) + (stationData.points || 0);
 
         transaction.update(userRef, { totalPoints: newPoints });
         transaction.set(scanRef, {
           userId: user.uid,
           stationId,
-          pointsEarned: stationPoints,
+          pointsEarned: stationData.points || 0,
           scannedAt: serverTimestamp(),
         });
       });
 
-      toast.success(`✅ ${stationData.points} points earned!`);
-    } catch {
-      toast.error("Scan failed. Try again.");
-    }
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const qrCode = new Html5Qrcode("qr-reader");
-    try {
-      const scanResult = await qrCode.scanFile(file, true);
-      await handleScan(scanResult);
+      return { success: true, points: stationData.points || 0 };
     } catch (err) {
-      if (String(err).includes("No QR code detected")) toast.error("No QR code detected in image.");
-      else toast.error("Image scan failed.");
-    } finally {
-      qrCode.stop().catch(() => {});
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      console.log(err);
+      toast.error("Scan failed. Try again.");
+      return null;
     }
   };
 
   return (
-    <div className="bg-[#0d1b3a]/95 border-2 border-dashed border-[#00e0ff] rounded-2xl p-6 w-[320px] shadow-2xl flex flex-col items-center">
-
-
-  <div className="w-full h-[250px] rounded-xl bg-black/20 flex items-center justify-center mb-4">
-   
-      <div id="qr-reader" className="w-full h-full flex items-center justify-center">
-        {scanning ? (
-          <p className="text-white text-sm animate-pulse">Scanning...</p>
-        ) : (
-          <p className="text-gray-400 text-sm">Initializing camera...</p>
-        )}
+    <div className="bg-[#0d1b3a]/95 border-2 border-dashed border-[#00e0ff] rounded-2xl p-6 w-[320px] shadow-2xl flex flex-col items-center relative">
+      <div className="w-full h-[250px] rounded-xl bg-black/20 flex items-center justify-center mb-4">
+        <div id="qr-reader" className="w-full h-full flex items-center justify-center">
+          {processing ? (
+            <p className="text-white text-sm animate-pulse">Scanning...</p>
+          ) : (
+            <p className="text-gray-400 text-sm">Align QR inside the frame</p>
+          )}
+        </div>
       </div>
+
+      <p className="text-xs text-gray-300 text-center">
+        Align QR inside the frame to scan.
+      </p>
+
+      {showPoints !== null && (
+        <div className="absolute top-16 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg animate-fade-up">
+          +{showPoints} points!
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fade-up {
+          0% { opacity: 0; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-10px); }
+          100% { opacity: 0; transform: translateY(-30px); }
+        }
+        .animate-fade-up {
+          animation: fade-up 1.5s ease-out forwards;
+        }
+      `}</style>
     </div>
-
-  {uploadMode && (
-    <input
-      ref={fileInputRef}
-      type="file"
-      accept="image/*"
-      onChange={handleImageUpload}
-      className="mt-2 w-full text-sm text-white"
-    />
-  )}
-
-  <p className="text-xs text-gray-300 text-center mb-4">
-    {uploadMode
-      ? "Select an image containing the QR code."
-      : "Align the QR code within the frame to check in."}
-  </p>
-
- 
-</div>
-
   );
 };
 
