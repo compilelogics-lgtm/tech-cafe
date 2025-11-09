@@ -69,12 +69,12 @@ export default function ModeratorDashboard() {
         <div className="bg-[#1E1E28] border border-[#224E61] rounded-xl p-6 flex flex-col gap-4">
           <h2 className="text-white text-2xl font-medium mb-2">Quick Actions</h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <Link
+            {/* <Link
               to="/moderator/generate-qr"
               className="w-full bg-[#00E0FF] text-white rounded-lg py-3 text-center hover:bg-[#00C8E6] transition"
             >
               + Generate QR Codes
-            </Link>
+            </Link> */}
 
             <Link
               to="/moderator/stations"

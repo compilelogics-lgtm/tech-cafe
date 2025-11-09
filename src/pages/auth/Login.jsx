@@ -8,6 +8,9 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../utils/firebase";
 import group from "./../../assets/group.png";
 
+import bgMobile from "../../assets/image.png";
+import bgDesktop from "../../assets/desktopbg.png";
+
 /* Utility for class merging (figma used cn()) */
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -78,10 +81,18 @@ export default function Login() {
   return (
    <main className="bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen flex flex-col items-center relative overflow-hidden">
 
+      {/* Mobile BG */}
       <img
-        className="absolute w-full h-full top-0 left-0 object-cover"
-        alt="Background pattern"
-        src={group}
+        src={bgMobile}
+        alt="Mobile Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+      />
+
+      {/* Desktop BG */}
+      <img
+        src={bgDesktop}
+        alt="Desktop Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
       />
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-[390px] px-[58px] pt-[119px]">

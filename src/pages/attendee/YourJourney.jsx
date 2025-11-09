@@ -11,8 +11,8 @@ import {
 import { db } from "../../utils/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import ScanQR from "./ScanQR";
-import bg from "../../assets/image.png";
-
+import bgMobile from "../../assets/image.png";
+import bgDesktop from "../../assets/desktopbg.png";
 export default function Journey() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -208,18 +208,51 @@ export default function Journey() {
     },
   ];
 
-  if (loading)
-    return (
-      <div className="p-10 text-center text-white">Loading journey...</div>
-    );
+if (loading)
+  return (
+    <div className="relative min-h-screen w-full flex items-center justify-center text-white text-lg font-medium">
+
+      {/* Mobile BG */}
+      <img
+        src={bgMobile}
+        alt="Mobile Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+      />
+
+      {/* Desktop BG */}
+      <img
+        src={bgDesktop}
+        alt="Desktop Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
+      />
+
+      {/* Overlay gradients (same as main layout if needed) */}
+      <div className="absolute inset-0 bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)]" />
+
+      {/* Loading text */}
+      <div className="relative z-10 animate-pulse">
+        Loading Journey...
+      </div>
+    </div>
+  );
+
 
   return (
-    <main className="relative min-h-screen w-full bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat">
-      <img
-        src={bg}
-        alt="Group"
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-      />
+<main className="relative min-h-screen w-full bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat">
+  
+  {/* Mobile BG */}
+  <img
+    src={bgMobile}
+    alt="Mobile BG"
+    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+  />
+
+  {/* Desktop BG */}
+  <img
+    src={bgDesktop}
+    alt="Desktop BG"
+    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
+  />
 
       <header className="absolute top-[119px] left-[calc(50%_-_170px)]">
         <h1 className="[font-family:'Poppins',Helvetica] font-semibold text-white text-[22px] tracking-[0] leading-[normal] translate-y-[-1rem] animate-fade-in opacity-0">
@@ -427,9 +460,9 @@ export default function Journey() {
               </span>
             </div> */}
 
-            <p className="text-sm text-[#b4c1d9] mb-4 text-center">
+            {/* <p className="text-sm text-[#b4c1d9] mb-4 text-center">
               Points: {selected.points || 0}
-            </p>
+            </p> */}
 
             {!isParticipated(selected.id) ? (
               <button

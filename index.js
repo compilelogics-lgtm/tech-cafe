@@ -68,3 +68,37 @@ export const createModerator = functions.https.onCall(async (data, context) => {
     );
   }
 });
+export const adminDeleteUser = functions.https.onCall(async (data, context) => {
+  const { uid } = data; // use data directly
+
+  if (!uid) {
+    throw new functions.https.HttpsError("invalid-argument", "UID is required");
+  }
+
+  try {
+    // Delete Firebase Auth user
+    await admin.auth().deleteUser(uid);
+
+    // Delete user doc
+    await admin.firestore().collection("users").doc(uid).delete();
+
+    // Delete scans in batches (safe for >500 docs)
+    const scansRef = admin.firestore().collection("scans").where("userId", "==", uid);
+    let snapshot = await scansRef.get();
+
+    while (!snapshot.empty) {
+      const batch = admin.firestore().batch();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+      snapshot = await scansRef.get(); // get next batch
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw new functions.https.HttpsError(
+      "internal",
+      error.message || "Unknown error occurred while deleting user"
+    );
+  }
+});

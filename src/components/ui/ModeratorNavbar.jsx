@@ -13,7 +13,7 @@ export default function ModeratorNavbar() {
 
   const links = [
     { name: "Dashboard", path: "/moderator/dashboard" },
-    { name: "Generate QR", path: "/moderator/generate-qr" },
+    // { name: "Generate QR", path: "/moderator/generate-qr" },
     { name: "Stations", path: "/moderator/stations" },
     { name: "Attendees", path: "/moderator/attendee-management" },
   ];

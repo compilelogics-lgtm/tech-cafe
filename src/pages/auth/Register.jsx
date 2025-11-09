@@ -13,7 +13,10 @@ import group from "./../../assets/group.png";
 import novartislogotransparent1 from "./../../assets/novartis-logo-transparent-2-1-register.png";
 import novartislogotransparent2 from "./../../assets/novartis-logo-transparent-2-register.png";
 
-const ALLOWED_DOMAIN = "@gmail.com"; // change if needed
+import bgMobile from "../../assets/image.png";
+import bgDesktop from "../../assets/desktopbg.png";
+
+const ALLOWED_DOMAIN = "@novartis.com"; // change if needed
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -112,10 +115,18 @@ export default function Register() {
 
   return (
     <main className="bg-[linear-gradient(180deg,rgba(10,15,37,1)_0%,rgba(16,32,66,1)_100%)] w-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-white">
+      {/* Mobile BG */}
       <img
-        className="absolute w-full h-full top-0 left-0 object-cover opacity-60"
-        alt="Background pattern"
-        src={group}
+        src={bgMobile}
+        alt="Mobile Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+      />
+
+      {/* Desktop BG */}
+      <img
+        src={bgDesktop}
+        alt="Desktop Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
       />
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-[390px] px-[58px] pt-[40px]">

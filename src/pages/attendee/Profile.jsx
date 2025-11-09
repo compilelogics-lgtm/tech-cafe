@@ -16,6 +16,16 @@ import profile1 from "../../assets/profile.png";
 import leaderboard from "../../assets/leaderboard-2.png";
 import map from "../../assets/journey-2.png";
 import bg from "../../assets/image.png";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { updateDoc } from "firebase/firestore";
+import { storage } from "../../utils/firebase";
+import { useRef } from "react";
+import bgMobile from "../../assets/image.png";
+import bgDesktop from "../../assets/desktopbg.png";
+// import map from "../../assets/journey-2.png";
+import profile from "../../assets/profile.png";
+
+
 
 // ---------------------- Embedded UI Components ----------------------
 const cn = (...classes) => classes.filter(Boolean).join(" ");
@@ -67,7 +77,19 @@ export default function Profile() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 const [showQR, setShowQR] = useState(false);
+ const fileInputRef = useRef(null);   // <---- Add this
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !user) return;
+
+    const storageRef = ref(storage, `profileImages/${user.uid}.jpg`);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+
+    await updateDoc(doc(db, "users", user.uid), { photoURL: downloadURL });
+    setProfile((prev) => ({ ...prev, photoURL: downloadURL }));
+  };
   const handleLogout = () => {
     logout();
     navigate("/welcome", { replace: true });
@@ -110,11 +132,34 @@ const [showQR, setShowQR] = useState(false);
     fetchData();
   }, [user]);
 
-  if (loading) {
-    return (
-      <div className="p-10 text-center text-gray-600">Loading profile...</div>
-    );
-  }
+  if (loading)
+  return (
+    <div className="relative min-h-screen w-full flex items-center justify-center text-white text-lg font-medium">
+
+      {/* Mobile BG */}
+      <img
+        src={bgMobile}
+        alt="Mobile Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+      />
+
+      {/* Desktop BG */}
+      <img
+        src={bgDesktop}
+        alt="Desktop Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
+      />
+
+      {/* Overlay gradients (same as main layout if needed) */}
+      <div className="absolute inset-0 bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)]" />
+
+      {/* Loading text */}
+      <div className="relative z-10 animate-pulse">
+        Loading Profile...
+      </div>
+    </div>
+  );
+
 
   const completedStations = scans.length;
   const totalStations = stations.length;
@@ -123,12 +168,19 @@ const [showQR, setShowQR] = useState(false);
 
   return (
     <main className="overflow-hidden bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat w-full min-h-screen relative flex justify-center items-start">
-      {/* Background Image */}
-      <img
-        className="absolute w-[98.08%] h-full top-0 left-0 object-cover"
-        alt="Background grid pattern"
-        src={bg}
-      />
+  {/* Mobile BG */}
+  <img
+    src={bgMobile}
+    alt="Mobile BG"
+    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+  />
+
+  {/* Desktop BG */}
+  <img
+    src={bgDesktop}
+    alt="Desktop BG"
+    className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
+  />
 
       <div className="relative z-10 w-full max-w-[390px] pt-[119px] pb-[100px] px-7">
         <h1 className="text-center font-semibold text-[22px] [font-family:'Poppins',Helvetica] text-white tracking-[0] leading-[normal] mb-[20px] opacity-0 translate-y-[-1rem] animate-fade-in">
@@ -136,15 +188,31 @@ const [showQR, setShowQR] = useState(false);
         </h1>
 
         {/* Profile Photo (Centered Below Title, Above Card) */}
-        <div className="w-full flex justify-center mb-[40px] opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:150ms]">
-          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#00b1ff] shadow-lg bg-[#0f1930]">
+        <div className="flex flex-col items-center gap-3 mb-4 animate-fade-in">
+          <div
+            className="w-32 h-32 rounded-full overflow-hidden border-4 border-[#00b1ff] shadow-lg bg-[#0f1930] cursor-pointer hover:scale-[1.03] transition-transform"
+            onClick={() => fileInputRef.current.click()}
+          >
             <img
               src={profile?.photoURL || profile1}
               alt="Profile"
               className="w-full h-full object-cover"
             />
           </div>
+
+          <p className="text-[13px] text-[#8abde6] font-medium [font-family:'Poppins',Helvetica] tracking-wide">
+            Tap to upload or change photo
+          </p>
+
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleImageUpload}
+          />
         </div>
+
 
         {/* Profile Info Card */}
         <Card className="w-full h-[120px] bg-[#0f1930] rounded-2xl overflow-hidden border-none shadow-[0px_4px_12px_#00000040] relative mb-4 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:250ms] before:content-[''] before:absolute before:inset-0 before:p-0.5 before:rounded-2xl before:[background:linear-gradient(90deg,rgba(126,75,254,0.42)_7%,rgba(0,108,255,0.42)_47%,rgba(0,177,255,0.42)_100%)] before:[-webkit-mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] before:[-webkit-mask-composite:xor] before:[mask-composite:exclude] before:z-[1] before:pointer-events-none">
@@ -178,7 +246,7 @@ const [showQR, setShowQR] = useState(false);
         </Card>
 
         {/* Progress Section */}
-        <section className="mb-6 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:400ms]">
+        {/* <section className="mb-6 opacity-0 translate-y-[-1rem] animate-fade-in [--animation-delay:400ms]">
           <h3 className="[font-family:'Poppins',Helvetica] font-medium text-white text-sm mb-4">
             Participation Progress
           </h3>
@@ -191,7 +259,7 @@ const [showQR, setShowQR] = useState(false);
           <p className="[font-family:'Poppins',Helvetica] text-[#b4c1d9] text-xs">
             {completedStations} / {totalStations} Activities Completed
           </p>
-        </section>
+        </section> */}
 
         {/* Activities List */}
         <section className="flex flex-col gap-3 w-full mb-8">
@@ -236,34 +304,39 @@ const [showQR, setShowQR] = useState(false);
         </div>
       </div>
 
-      <nav className="fixed bottom-0 left-0 z-100 w-full h-[85px] bg-[#0f1930de]">
+      <nav className="fixed bottom-0 left-0 w-full h-[85px] bg-[#0f1930de] z-10">
         <div className="flex items-center justify-center gap-[73px] h-full px-7 md:px-8">
-          {/* Leaderboard Button */}
           <button
             onClick={() => navigate("/attendee/leaderboard")}
-            className="flex flex-col w-[71px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+            className="flex flex-col w-[71px] items-center p-0 transition-opacity hover:opacity-80"
           >
             <img
-              className="w-[41px] h-[41px]"
+              className="w-full"
               alt="Leaderboard"
               src={leaderboard}
             />
           </button>
 
-          {/* Map Button */}
           <button
             onClick={() => navigate("/attendee/journey")}
-            className="flex flex-col w-[60px] items-center h-auto p-0 transition-opacity hover:opacity-80"
+            className="flex flex-col w-[70px] items-center p-0"
           >
-            <img className="w-full h-[47px]" alt="Map" src={map} />
+            <img
+              className="w-full"
+              alt="Map"
+              src={map}
+            />
           </button>
 
-          {/* Profile Button (Active) */}
           <button
             onClick={() => navigate("/attendee/profile")}
-            className="flex flex-col w-[41px] items-center h-auto p-0"
+            className="flex flex-col w-[41px] items-center p-0 transition-opacity hover:opacity-80"
           >
-            <img className="w-full" alt="Profile" src={profile1} />
+            <img
+              className="w-full"
+              alt="Profile"
+              src={profile1}
+            />
           </button>
         </div>
       </nav>

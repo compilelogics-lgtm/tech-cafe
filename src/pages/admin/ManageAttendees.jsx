@@ -10,9 +10,9 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { db } from "../../utils/firebase";
+import { db, functions} from "../../utils/firebase";
 import AdminNavbar from "../../components/ui/AdminNavbar";
-
+import { httpsCallable } from "firebase/functions";
 export default function ManageAttendees() {
   const [attendees, setAttendees] = useState([]);
   const [expanded, setExpanded] = useState(null);
@@ -44,12 +44,26 @@ export default function ManageAttendees() {
     return () => unsub();
   }, []);
 
-  const handleDelete = async (attendee) => {
-    if (window.confirm(`Delete ${attendee.name}? This cannot be undone.`)) {
-      await deleteDoc(doc(db, "users", attendee.id));
-      alert(`${attendee.name} deleted.`);
-    }
-  };
+const handleDelete = async (attendee) => {
+  if (!attendee.id) return alert("No user ID found.");
+
+  console.log("Deleting UID:", attendee.id); // <-- log for verification
+
+  if (!window.confirm(`Delete ${attendee.name}?`)) return;
+
+  try {
+    const deleteUserFn = httpsCallable(functions, "adminDeleteUser");
+    const result = await deleteUserFn({ uid: attendee.id });
+    console.log("Delete result:", result);
+
+    alert(`${attendee.name} was deleted successfully.`);
+    // Remove locally so UI updates immediately
+    setAttendees(prev => prev.filter(a => a.id !== attendee.id));
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    alert(`Failed to delete user: ${err.message}`);
+  }
+};
 
   const handleResetPoints = async (attendee) => {
     if (window.confirm(`Reset all points for ${attendee.name}?`)) {
@@ -207,12 +221,12 @@ return (
                             >
                               Reset
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => handleDelete(a)}
                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-sm transition"
                             >
                               Delete
-                            </button>
+                            </button> */}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <button
@@ -283,12 +297,12 @@ return (
                       >
                         Reset
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => handleDelete(a)}
                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-md text-xs transition"
                       >
                         Delete
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => setExpanded(expanded === a.id ? null : a.id)}
                         className="bg-white/10 hover:bg-[#00E0FF]/30 text-white px-3 py-1.5 rounded-md text-xs transition"

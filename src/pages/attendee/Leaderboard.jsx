@@ -6,7 +6,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import profile1 from "../../assets/profile-2.png";
 import leaderboard from "../../assets/leaderboard.png";
 import map from "../../assets/journey-2.png";
-import bg from "../../assets/image.png";
+import bgMobile from "../../assets/image.png";
+import bgDesktop from "../../assets/desktopbg.png";
 
 
 const navItems = [
@@ -90,10 +91,33 @@ export default function Leaderboard() {
     }
   }, [users, user]);
 
-  if (loading)
-    return (
-      <div className="p-10 text-center text-white">Loading leaderboard...</div>
-    );
+if (loading)
+  return (
+    <div className="relative min-h-screen w-full flex items-center justify-center text-white text-lg font-medium">
+
+      {/* Mobile BG */}
+      <img
+        src={bgMobile}
+        alt="Mobile Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+      />
+
+      {/* Desktop BG */}
+      <img
+        src={bgDesktop}
+        alt="Desktop Background"
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
+      />
+
+      {/* Overlay gradients (same as main layout if needed) */}
+      <div className="absolute inset-0 bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)]" />
+
+      {/* Loading text */}
+      <div className="relative z-10 animate-pulse">
+        Loading leaderboard...
+      </div>
+    </div>
+  );
 
   const topThree = users.slice(0, 3);
   const podiumData = [
@@ -121,11 +145,20 @@ export default function Leaderboard() {
     <div className="min-h-screen w-full relative bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] text-white">
       {/* Background */}
      {/* <main className="relative min-h-screen w-full overflow-hidden bg-[linear-gradient(72deg,rgba(34,78,97,0.24)_0%,rgba(27,55,82,0.85)_50%,rgba(20,33,67,1)_100%),linear-gradient(104deg,rgba(34,78,97,0.64)_0%,rgba(13,27,58,1)_100%),linear-gradient(98deg,rgba(34,78,97,1)_0%,rgba(24,53,78,1)_47%,rgba(13,27,58,1)_100%)] bg-cover bg-center bg-no-repeat"> */}
-       <img
-         src={bg}
-         alt="Group"
-         className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-       />
+        {/* Mobile BG */}
+        <img
+          src={bgMobile}
+          alt="Mobile BG"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none md:hidden"
+        />
+      
+        {/* Desktop BG */}
+        <img
+          src={bgDesktop}
+          alt="Desktop BG"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none hidden md:block"
+        />
+      
 
       <div className="relative z-10 flex flex-col items-center pt-28 px-6 pb-36">
         <h1 className="text-2xl font-bold text-center mb-1">LEADERBOARD</h1>
@@ -207,7 +240,7 @@ export default function Leaderboard() {
         item.label === "Leaderboard"
           ? "w-[71px]"
           : item.label === "Map"
-          ? "w-[60px]"
+          ? "w-[71px]"
           : "w-[41px]";
 
       return (
@@ -219,8 +252,6 @@ export default function Leaderboard() {
           <img
             className={`${
               item.label === "Profile"
-                ? "w-[55px] h-[55px]"
-                : "w-[55px] h-[55px]"
             }`}
             src={item.icon}
           />

@@ -123,7 +123,7 @@ export default function ModeratorManageStations() {
                         >
                           Edit
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => toggleStatus(s)}
                           className={`px-3 py-1 rounded text-sm transition ${
                             s.active
@@ -132,7 +132,7 @@ export default function ModeratorManageStations() {
                           }`}
                         >
                           {s.active ? "Deactivate" : "Activate"}
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleGenerateQR(s)}
                           className="bg-[#1A9FFF]/70 hover:bg-[#1A9FFF] text-white px-3 py-1 rounded text-sm transition"
